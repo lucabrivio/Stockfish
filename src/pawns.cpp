@@ -57,8 +57,14 @@ namespace {
     S( 0, 0), S( 6, 13), S(6,13), S(14,29),
     S(34,68), S(83,166), S(0, 0), S( 0, 0) };
 
+  /// SPSA
+  int pawnsfilespan_midgame = 0;
+  int pawnsfilespan_endgame = 0;
+  pawnsfilespan_midgame = Options["SPSA_pawnsfilespan_midgame"];
+  pawnsfilespan_endgame = Options["SPSA_pawnsfilespan_endgame"];
+  
   // Bonus for file distance of the two outermost pawns
-  const Score PawnsFileSpan = S(0, 15);
+  Score PawnsFileSpan = S(pawnsfilespan_midgame, pawnsfilespan_endgame);
 
   // Weakness of our pawn shelter in front of the king indexed by [rank]
   const Value ShelterWeakness[RANK_NB] =

@@ -86,6 +86,13 @@ void init(OptionsMap& o) {
   o["Slow Mover"]                  = Option(70, 10, 1000);
   o["UCI_Chess960"]                = Option(false);
   o["UCI_AnalyseMode"]             = Option(false, on_eval);
+/// SPSA
+  o["SPSA_mbonus_base"]                  = Option(17, 0, 50, on_eval);
+  o["SPSA_ebonus_base"]                  = Option(7, 0, 50, on_eval);
+  o["SPSA_supportingpawns_samerank"]     = Option(20, 0, 50, on_eval);
+  o["SPSA_supportingpawns_previousrank"] = Option(12, 0, 50, on_eval);
+  o["SPSA_pawnsfilespan_midgame"]        = Option(0, -50, 50, on_eval);
+  o["SPSA_pawnsfilespan_endgame"]        = Option(15, -50, 50, on_eval);
 }
 
 

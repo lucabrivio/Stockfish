@@ -91,6 +91,12 @@ namespace {
   enum { Mobility, PawnStructure, PassedPawns, Space, KingDangerUs, KingDangerThem };
   Score Weights[6];
 
+  /// SPSA
+  int mbonus_base = 0;
+  int ebonus_base = 0;
+  int supportingpawns_samerank = 0;
+  int supportingpawns_previousrank = 0;
+
   typedef Value V;
   #define S(mg, eg) make_score(mg, eg)
 
@@ -269,6 +275,12 @@ namespace Eval {
     Weights[Space]          = weight_option("Space", "Space", WeightsInternal[Space]);
     Weights[KingDangerUs]   = weight_option("Cowardice", "Cowardice", WeightsInternal[KingDangerUs]);
     Weights[KingDangerThem] = weight_option("Aggressiveness", "Aggressiveness", WeightsInternal[KingDangerThem]);
+    
+    /// SPSA
+    mbonus_base = Options["SPSA_mbonus_base"];
+    ebonus_base = Options["SPSA_ebonus_base"];
+    supportingpawns_samerank = Options["SPSA_supportingpawns_samerank"];
+    supportingpawns_previousrank = Options["SPSA_supportingpawns_previousrank"];
 
     const int MaxSlope = 30;
     const int Peak = 1280;
@@ -774,8 +786,8 @@ Value do_evaluate(const Position& pos) {
         int rr = r * (r - 1);
 
         // Base bonus based on rank
-        Value mbonus = Value(17 * rr);
-        Value ebonus = Value(7 * (rr + r + 1));
+        Value mbonus = Value(mbonus_base * rr);
+        Value ebonus = Value(ebonus_base * (rr + r + 1));
 
         if (rr)
         {
@@ -831,10 +843,10 @@ Value do_evaluate(const Position& pos) {
         // on the same rank and a bit smaller if it's on the previous rank.
         supportingPawns = pos.pieces(Us, PAWN) & adjacent_files_bb(file_of(s));
         if (supportingPawns & rank_bb(s))
-            ebonus += Value(r * 20);
+            ebonus += Value(r * supportingpawns_samerank);
 
         else if (supportingPawns & rank_bb(s - pawn_push(Us)))
-            ebonus += Value(r * 12);
+            ebonus += Value(r * supportingpawns_previousrank);
 
         // Rook pawns are a special case: They are sometimes worse, and
         // sometimes better than other passed pawns. It is difficult to find
