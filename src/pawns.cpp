@@ -24,6 +24,8 @@
 #include "bitcount.h"
 #include "pawns.h"
 #include "position.h"
+/// SPSA
+#include "ucioption.h"
 
 namespace {
 
