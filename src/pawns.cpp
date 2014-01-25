@@ -58,10 +58,8 @@ namespace {
     S(34,68), S(83,166), S(0, 0), S( 0, 0) };
 
   /// SPSA
-  int pawnsfilespan_midgame = 0;
-  int pawnsfilespan_endgame = 0;
-  pawnsfilespan_midgame = Options["SPSA_pawnsfilespan_midgame"];
-  pawnsfilespan_endgame = Options["SPSA_pawnsfilespan_endgame"];
+  int pawnsfilespan_midgame = Options["SPSA_pawnsfilespan_midgame"];
+  int pawnsfilespan_endgame = Options["SPSA_pawnsfilespan_endgame"];
   
   // Bonus for file distance of the two outermost pawns
   Score PawnsFileSpan = S(pawnsfilespan_midgame, pawnsfilespan_endgame);
