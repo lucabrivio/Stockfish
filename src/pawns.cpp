@@ -58,7 +58,7 @@ namespace {
     S(34,68), S(83,166), S(0, 0), S( 0, 0) };
 
   // Bonus for file distance of the two outermost pawns
-  const Score PawnsFileSpan = S(0, 15);
+  const Score PawnsFileSpan = S(-2, 13);
 
   // Weakness of our pawn shelter in front of the king indexed by [rank]
   const Value ShelterWeakness[RANK_NB] =
