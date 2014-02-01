@@ -62,6 +62,9 @@ namespace {
   // Dynamic razoring margin based on depth
   inline Value razor_margin(Depth d) { return Value(512 + 16 * int(d)); }
 
+  // Dynamic aspiration window starting size based on depth
+  inline Value starting_delta(int d) { return Value(19 - 71 / d); }
+  
   // Futility lookup tables (initialized at startup) and their access functions
   int FutilityMoveCounts[2][32]; // [improving][depth]
 
@@ -333,7 +336,7 @@ namespace {
             // Reset aspiration window starting size
             if (depth >= 5)
             {
-                delta = Value(19 - 71 / depth);
+                delta = starting_delta(depth);
                 alpha = std::max(RootMoves[PVIdx].prevScore - delta,-VALUE_INFINITE);
                 beta  = std::min(RootMoves[PVIdx].prevScore + delta, VALUE_INFINITE);
             }
