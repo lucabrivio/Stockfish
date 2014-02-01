@@ -126,6 +126,9 @@ void Search::init() {
   int d;  // depth (ONE_PLY == 2)
   int hd; // half depth (ONE_PLY == 1)
   int mc; // moveCount
+  // SPSA
+  const int resetaspiration_max = Options["SPSA_resetaspiration_max"];
+  const int resetaspiration_scale = Options["SPSA_resetaspiration_scale"];
 
   // Init reductions array
   for (hd = 1; hd < 64; ++hd) for (mc = 1; mc < 64; ++mc)
@@ -147,7 +150,7 @@ void Search::init() {
 
   // Init aspiration window starting size array
   for (d = 5; d < 64; ++d)
-      StartingDelta[d] = Value(18 - 71 / d);
+      StartingDelta[d] = Value(resetaspiration_max - resetaspiration_scale * resetaspiration_max / d);
 
   // Init futility move count array
   for (d = 0; d < 32; ++d)
