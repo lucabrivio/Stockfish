@@ -145,9 +145,9 @@ void Search::init() {
           Reductions[0][0][hd][mc] += ONE_PLY / 2;
   }
 
-  // Init aspiration window starting size
+  // Init aspiration window starting size array
   for (d = 5; d < 64; ++d)
-      StartingDelta[d] = Value(19 - 71 / d);
+      StartingDelta[d] = Value(20 - 71 / d);
 
   // Init futility move count array
   for (d = 0; d < 32; ++d)
