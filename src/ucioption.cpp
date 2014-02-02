@@ -86,9 +86,9 @@ void init(OptionsMap& o) {
   o["Slow Mover"]                  = Option(70, 10, 1000);
   o["UCI_Chess960"]                = Option(false);
   o["UCI_AnalyseMode"]             = Option(false, on_eval);
-  // SPSA
-  o["SPSA_resetaspiration_max"]    = Option(20, 16, 32);
-  o["SPSA_resetaspiration_scale"]  = Option(3, 1, 4);
+  // SPSA (values are divided by 100)
+  o["SPSA_resetaspiration_max"]    = Option(2000, 1600, 3200);
+  o["SPSA_resetaspiration_scale"]  = Option(300, 100, 400);
 }
 
 

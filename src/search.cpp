@@ -126,9 +126,6 @@ void Search::init() {
   int d;  // depth (ONE_PLY == 2)
   int hd; // half depth (ONE_PLY == 1)
   int mc; // moveCount
-  // SPSA
-  const int resetaspiration_max = Options["SPSA_resetaspiration_max"];
-  const int resetaspiration_scale = Options["SPSA_resetaspiration_scale"];
 
   // Init reductions array
   for (hd = 1; hd < 64; ++hd) for (mc = 1; mc < 64; ++mc)
@@ -147,10 +144,6 @@ void Search::init() {
       else if (Reductions[0][0][hd][mc] > 1 * ONE_PLY)
           Reductions[0][0][hd][mc] += ONE_PLY / 2;
   }
-
-  // Init aspiration window starting size array
-  for (d = 5; d < 64; ++d)
-      StartingDelta[d] = Value(resetaspiration_max - resetaspiration_scale * resetaspiration_max / d);
 
   // Init futility move count array
   for (d = 0; d < 32; ++d)
@@ -194,6 +187,12 @@ void Search::think() {
 
   RootColor = RootPos.side_to_move();
   TimeMgr.init(Limits, RootPos.game_ply(), RootColor);
+  
+  // SPSA: aspiration window starting size array
+  float resetaspiration_max = Options["SPSA_resetaspiration_max"];
+  float resetaspiration_scale = Options["SPSA_resetaspiration_scale"];
+  for (int d = 5; d < 64; ++d)
+      StartingDelta[d] = Value(int((resetaspiration_max / 100) - (resetaspiration_scale / 100) * (resetaspiration_max / 100) / d));
 
   if (RootMoves.empty())
   {
@@ -215,7 +214,7 @@ void Search::think() {
           goto finalize;
       }
   }
-
+  
   if (Options["Contempt Factor"] && !Options["UCI_AnalyseMode"])
   {
       int cf = Options["Contempt Factor"] * PawnValueMg / 100; // From centipawns
