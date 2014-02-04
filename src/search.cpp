@@ -147,7 +147,7 @@ void Search::init() {
   
   // Init aspiration window starting size array
   for (d = 5; d < 64; ++d)
-      StartingDelta[d] = Value(int(17.37 - 47.5 / d));
+      StartingDelta[d] = Value(17.37 - 47.5 / d);
 
   // Init futility move count array
   for (d = 0; d < 32; ++d)
