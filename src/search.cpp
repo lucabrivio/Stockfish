@@ -62,7 +62,7 @@ namespace {
   // Dynamic razoring margin based on depth
   inline Value razor_margin(Depth d) { return Value(512 + 16 * int(d)); }
 
-  // Dynamic aspiration window starting size based on depth
+  // Aspiration window starting size based on depth
   Value StartingDelta[64]; // [depth]
   
   // Futility lookup tables (initialized at startup) and their access functions
@@ -144,6 +144,10 @@ void Search::init() {
       else if (Reductions[0][0][hd][mc] > 1 * ONE_PLY)
           Reductions[0][0][hd][mc] += ONE_PLY / 2;
   }
+  
+  // Init aspiration window starting size array
+  for (d = 5; d < 64; ++d)
+      StartingDelta[d] = Value(17.37 - 47.5 / d);
 
   // Init futility move count array
   for (d = 0; d < 32; ++d)
@@ -187,12 +191,6 @@ void Search::think() {
 
   RootColor = RootPos.side_to_move();
   TimeMgr.init(Limits, RootPos.game_ply(), RootColor);
-  
-  // SPSA: aspiration window starting size array
-  float resetaspiration_max = Options["SPSA_resetaspiration_max"];
-  float resetaspiration_scale = Options["SPSA_resetaspiration_scale"];
-  for (int d = 5; d < 64; ++d)
-      StartingDelta[d] = Value(int((resetaspiration_max / 100) - (resetaspiration_scale / 100) * (resetaspiration_max / 100) / d));
 
   if (RootMoves.empty())
   {
