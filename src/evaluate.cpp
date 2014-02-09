@@ -497,14 +497,6 @@ Value do_evaluate(const Position& pos) {
         if (ei.attackedBy[Them][PAWN] & s)
             score -= ThreatenedByPawn[Piece];
 
-        // Penalty for bishop with same coloured pawns
-        if (Piece == BISHOP)
-            score -= BishopPawns * ei.pi->pawns_on_same_color_squares(Us, s);
-
-        // Penalty for knight when there are few enemy pawns
-        if (Piece == KNIGHT)
-            score -= KnightPawns * std::max(5 - pos.count<PAWN>(Them), 0);
-
         if (Piece == BISHOP || Piece == KNIGHT)
         {
             // Bishop and knight outposts squares
@@ -515,6 +507,30 @@ Value do_evaluate(const Position& pos) {
             if (    relative_rank(Us, s) < RANK_5
                 && (pos.pieces(PAWN) & (s + pawn_push(Us))))
                 score += MinorBehindPawn;
+
+	    if (Piece == BISHOP)
+	    {
+		// Penalty for bishop with same coloured pawns
+		score -= BishopPawns * ei.pi->pawns_on_same_color_squares(Us, s);
+
+		// An important Chess960 pattern: A cornered bishop blocked by a
+		// friendly pawn diagonally in front of it is a very serious
+		// problem, especially when that pawn is also blocked.
+		if (   pos.is_chess960()
+		&& (s == relative_square(Us, SQ_A1) || s == relative_square(Us, SQ_H1)))
+		{
+		    const enum Piece P = make_piece(Us, PAWN);
+		    Square d = pawn_push(Us) + (file_of(s) == FILE_A ? DELTA_E : DELTA_W);
+		    if (pos.piece_on(s + d) == P)
+			score -= !pos.empty(s + d + pawn_push(Us)) ? TrappedBishopA1H1 * 4
+				: pos.piece_on(s + d + d) == P     ? TrappedBishopA1H1 * 2
+								   : TrappedBishopA1H1;
+		}
+	    }
+
+	    // Penalty for knight when there are few enemy pawns
+	    else
+		score -= KnightPawns * std::max(5 - pos.count<PAWN>(Them), 0);
         }
 
         if (  (Piece == ROOK || Piece == QUEEN)
@@ -549,21 +565,6 @@ Value do_evaluate(const Position& pos) {
                 && (rank_of(ksq) == rank_of(s) || relative_rank(Us, ksq) == RANK_1)
                 && !ei.pi->semiopen_on_side(Us, file_of(ksq), file_of(ksq) < FILE_E))
                 score -= (TrappedRook - make_score(mob * 8, 0)) * (pos.can_castle(Us) ? 1 : 2);
-        }
-
-        // An important Chess960 pattern: A cornered bishop blocked by a friendly
-        // pawn diagonally in front of it is a very serious problem, especially
-        // when that pawn is also blocked.
-        if (   Piece == BISHOP
-            && pos.is_chess960()
-            && (s == relative_square(Us, SQ_A1) || s == relative_square(Us, SQ_H1)))
-        {
-            const enum Piece P = make_piece(Us, PAWN);
-            Square d = pawn_push(Us) + (file_of(s) == FILE_A ? DELTA_E : DELTA_W);
-            if (pos.piece_on(s + d) == P)
-                score -= !pos.empty(s + d + pawn_push(Us)) ? TrappedBishopA1H1 * 4
-                        : pos.piece_on(s + d + d) == P     ? TrappedBishopA1H1 * 2
-                                                           : TrappedBishopA1H1;
         }
     }
 
