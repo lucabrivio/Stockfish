@@ -527,45 +527,47 @@ Value do_evaluate(const Position& pos) {
 								   : TrappedBishopA1H1;
 		}
 	    }
-
-	    // Penalty for knight when there are few enemy pawns
 	    else
+		// Penalty for knight when there are few enemy pawns
 		score -= KnightPawns * std::max(5 - pos.count<PAWN>(Them), 0);
         }
+	else
+	{
+	    if (  (Piece == ROOK || Piece == QUEEN))
+	    {
+		if (relative_rank(Us, s) >= RANK_5)
+		{
+		    // Major piece on 7th rank and enemy king trapped on 8th
+		    if (   relative_rank(Us, s) == RANK_7
+			&& relative_rank(Us, pos.king_square(Them)) == RANK_8)
+			score += Piece == ROOK ? RookOn7th : QueenOn7th;
 
-        if (  (Piece == ROOK || Piece == QUEEN)
-            && relative_rank(Us, s) >= RANK_5)
-        {
-            // Major piece on 7th rank and enemy king trapped on 8th
-            if (   relative_rank(Us, s) == RANK_7
-                && relative_rank(Us, pos.king_square(Them)) == RANK_8)
-                score += Piece == ROOK ? RookOn7th : QueenOn7th;
+		    // Major piece attacking enemy pawns on the same rank/file
+		    Bitboard pawns = pos.pieces(Them, PAWN) & PseudoAttacks[ROOK][s];
+		    if (pawns)
+			score += popcount<Max15>(pawns) * (Piece == ROOK ? RookOnPawn : QueenOnPawn);
+		}
+		// Special extra evaluation for rooks
+		if (Piece == ROOK)
+		{
+		    // Give a bonus for a rook on a open or semi-open file
+		    if (ei.pi->semiopen(Us, file_of(s)))
+			score += ei.pi->semiopen(Them, file_of(s)) ? RookOpenFile : RookSemiopenFile;
 
-            // Major piece attacking enemy pawns on the same rank/file
-            Bitboard pawns = pos.pieces(Them, PAWN) & PseudoAttacks[ROOK][s];
-            if (pawns)
-                score += popcount<Max15>(pawns) * (Piece == ROOK ? RookOnPawn : QueenOnPawn);
-        }
+		    if (mob > 3 || ei.pi->semiopen(Us, file_of(s)))
+			continue;
 
-        // Special extra evaluation for rooks
-        if (Piece == ROOK)
-        {
-            // Give a bonus for a rook on a open or semi-open file
-            if (ei.pi->semiopen(Us, file_of(s)))
-                score += ei.pi->semiopen(Them, file_of(s)) ? RookOpenFile : RookSemiopenFile;
+		    Square ksq = pos.king_square(Us);
 
-            if (mob > 3 || ei.pi->semiopen(Us, file_of(s)))
-                continue;
-
-            Square ksq = pos.king_square(Us);
-
-            // Penalize rooks which are trapped by a king. Penalize more if the
-            // king has lost its castling capability.
-            if (   ((file_of(ksq) < FILE_E) == (file_of(s) < file_of(ksq)))
-                && (rank_of(ksq) == rank_of(s) || relative_rank(Us, ksq) == RANK_1)
-                && !ei.pi->semiopen_on_side(Us, file_of(ksq), file_of(ksq) < FILE_E))
-                score -= (TrappedRook - make_score(mob * 8, 0)) * (pos.can_castle(Us) ? 1 : 2);
-        }
+		    // Penalize rooks which are trapped by a king. Penalize more if the
+		    // king has lost its castling capability.
+		    if (   ((file_of(ksq) < FILE_E) == (file_of(s) < file_of(ksq)))
+			&& (rank_of(ksq) == rank_of(s) || relative_rank(Us, ksq) == RANK_1)
+			&& !ei.pi->semiopen_on_side(Us, file_of(ksq), file_of(ksq) < FILE_E))
+			score -= (TrappedRook - make_score(mob * 8, 0)) * (pos.can_castle(Us) ? 1 : 2);
+		}
+	    }
+	}
     }
 
     if (Trace)
