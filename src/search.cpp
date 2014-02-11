@@ -1614,7 +1614,7 @@ void check_time() {
                          && !Signals.failedLowAtRoot
                          && (   elapsed > TimeMgr.available_time()
                              || (   elapsed > (TimeMgr.available_time() * 64) / 103
-                                 && elapsed > IterationTime * 1.4));
+                                 && elapsed > IterationTime / 8 * 11));
 
   bool noMoreTime =   elapsed > TimeMgr.maximum_time() - 2 * TimerThread::Resolution
                    || stillAtFirstMove;
