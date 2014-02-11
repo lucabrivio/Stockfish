@@ -775,7 +775,7 @@ Value do_evaluate(const Position& pos) {
 
         // Base bonus based on rank
         Value mbonus = Value(16 * rr);
-        Value ebonus = Value(8 * (rr + 16 * r + 1));
+        Value ebonus = Value(8 * (rr + r + 1));
 
         if (rr)
         {
@@ -831,13 +831,13 @@ Value do_evaluate(const Position& pos) {
         // on the same rank and a bit smaller if it's on the previous rank.
         supportingPawns = pos.pieces(Us, PAWN) & adjacent_files_bb(file_of(s));
         if (supportingPawns & rank_bb(s))
-            ebonus += Value(r * 4);
+            ebonus += Value(r * 16);
 
         else if (supportingPawns & rank_bb(s - pawn_push(Us)))
-            ebonus -= Value(r * 4);
+            ebonus += Value(r * 4);
 	
 	else
-	    ebonus -= Value(r * 16);
+	    ebonus -= Value(r * 8);
 
         // Rook pawns are a special case: They are sometimes worse, and
         // sometimes better than other passed pawns. It is difficult to find
