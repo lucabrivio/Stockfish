@@ -774,15 +774,15 @@ Value do_evaluate(const Position& pos) {
         int rr = r * (r - 1);
 
         // Base bonus based on rank
-        Value mbonus = Value(17 * rr);
-        Value ebonus = Value(7 * (rr + r + 1));
+        Value mbonus = Value(16 * rr);
+        Value ebonus = Value(8 * (rr + 16 * r + 1));
 
         if (rr)
         {
             Square blockSq = s + pawn_push(Us);
 
             // Adjust bonus based on the king's proximity
-            ebonus +=  Value(square_distance(pos.king_square(Them), blockSq) * 5 * rr)
+            ebonus +=  Value(square_distance(pos.king_square(Them), blockSq) * 4 * rr)
                      - Value(square_distance(pos.king_square(Us  ), blockSq) * 2 * rr);
 
             // If blockSq is not the queening square then consider also a second push
@@ -831,10 +831,13 @@ Value do_evaluate(const Position& pos) {
         // on the same rank and a bit smaller if it's on the previous rank.
         supportingPawns = pos.pieces(Us, PAWN) & adjacent_files_bb(file_of(s));
         if (supportingPawns & rank_bb(s))
-            ebonus += Value(r * 20);
+            ebonus += Value(r * 4);
 
         else if (supportingPawns & rank_bb(s - pawn_push(Us)))
-            ebonus += Value(r * 12);
+            ebonus -= Value(r * 4);
+	
+	else
+	    ebonus -= Value(r * 16);
 
         // Rook pawns are a special case: They are sometimes worse, and
         // sometimes better than other passed pawns. It is difficult to find
