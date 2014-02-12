@@ -831,10 +831,10 @@ Value do_evaluate(const Position& pos) {
         // on the same rank and a bit smaller if it's on the previous rank.
         supportingPawns = pos.pieces(Us, PAWN) & adjacent_files_bb(file_of(s));
         if (supportingPawns & rank_bb(s))
-            ebonus += Value(r * 32);
-
-        else if (supportingPawns & rank_bb(s - pawn_push(Us)))
             ebonus += Value(r * 16);
+
+        if (supportingPawns & rank_bb(s - pawn_push(Us)))
+            ebonus += Value(r * 8);
 
         // Rook pawns are a special case: They are sometimes worse, and
         // sometimes better than other passed pawns. It is difficult to find
