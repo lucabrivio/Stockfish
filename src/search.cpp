@@ -433,7 +433,7 @@ namespace {
             // of the available time has been used. We probably don't have
             // enough time to search the first move at the next iteration anyway.
             if (   RootMoves.size() == 1
-                || IterationTime > (TimeMgr.available_time() * 64) / 103)
+                || IterationTime > (TimeMgr.available_time() * 62) / 100)
                 stop = true;
 
             if (stop)
@@ -1613,7 +1613,7 @@ void check_time() {
   bool stillAtFirstMove =    Signals.firstRootMove
                          && !Signals.failedLowAtRoot
                          && (   elapsed > TimeMgr.available_time()
-                             || (   elapsed > (TimeMgr.available_time() * 64) / 103
+                             || (   elapsed > (TimeMgr.available_time() * 62) / 100
                                  && elapsed > IterationTime * 1.4));
 
   bool noMoreTime =   elapsed > TimeMgr.maximum_time() - 2 * TimerThread::Resolution
