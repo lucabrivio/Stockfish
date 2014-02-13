@@ -206,6 +206,12 @@ namespace {
   // KingDanger[Color][attackUnits] contains the actual king danger weighted
   // scores, indexed by color and by a calculated integer number.
   Score KingDanger[COLOR_NB][128];
+  
+  /// FIXME
+  struct PassedPawnRank {
+      int   r, rr;
+      Value base_mbonus, base_ebonus;
+  } *passed_pawn_ranks[16];
 
   // Function prototypes
   template<bool Trace>
@@ -259,7 +265,7 @@ namespace Eval {
 
 
   /// init() computes evaluation weights from the corresponding UCI parameters
-  /// and setup king tables.
+  /// and setup king and passed pawn tables.
 
   void init() {
 
@@ -279,6 +285,14 @@ namespace Eval {
 
         KingDanger[1][i] = apply_weight(make_score(t, 0), Weights[KingDangerUs]);
         KingDanger[0][i] = apply_weight(make_score(t, 0), Weights[KingDangerThem]);
+    }
+
+    for (int i = 0; i < 16; ++i)
+    {
+	int r = passed_pawn_ranks[i]->r = (i - 8) - int(RANK_2);
+	int rr = passed_pawn_ranks[i]->rr = r * (r - 1);
+	passed_pawn_ranks[i]->base_mbonus = Value (17 * rr);
+	passed_pawn_ranks[i]->base_ebonus = Value (7 * (rr + r + 1));
     }
   }
 
@@ -770,12 +784,13 @@ Value do_evaluate(const Position& pos) {
 
         assert(pos.pawn_passed(Us, s));
 
-        int r = int(relative_rank(Us, s) - RANK_2);
-        int rr = r * (r - 1);
+	PassedPawnRank* ppr = passed_pawn_ranks[int(relative_rank(Us, s)) + 8];
+	int r  = ppr->r;
+	int rr = ppr->rr;
 
         // Base bonus based on rank
-        Value mbonus = Value(17 * rr);
-        Value ebonus = Value(7 * (rr + r + 1));
+        Value mbonus = ppr->base_mbonus;
+        Value ebonus = ppr->base_ebonus;
 
         if (rr)
         {
