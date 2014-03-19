@@ -328,7 +328,7 @@ namespace {
             if (depth >= 5)
             {
                 r = RootMoves[PVIdx].prevScore;
-                delta = std::min(Value(18), Value(p2 / (p2 + abs(r)) / 10 + 6));
+                delta = std::min(Value(18), std::max(Value(6), Value(-12.0/p2 * abs(r) + 18)));
                 alpha = std::max(r - delta,-VALUE_INFINITE);
                 beta  = std::min(r + delta, VALUE_INFINITE);
             }
