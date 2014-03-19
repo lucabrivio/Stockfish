@@ -284,7 +284,7 @@ namespace {
 
     Stack stack[MAX_PLY_PLUS_6], *ss = stack+2; // To allow referencing (ss-2)
     int depth;
-    Value bestValue, alpha, beta, delta;
+    Value bestValue, alpha, beta, delta, r, p2 = 2 * PawnValueMg;
 
     std::memset(ss-2, 0, 5 * sizeof(Stack));
     (ss-1)->currentMove = MOVE_NULL; // Hack to skip update gains
@@ -327,9 +327,10 @@ namespace {
             // Reset aspiration window starting size
             if (depth >= 5)
             {
-                delta = Value(depth > 23 ? 16 : 12);
-                alpha = std::max(RootMoves[PVIdx].prevScore - delta,-VALUE_INFINITE);
-                beta  = std::min(RootMoves[PVIdx].prevScore + delta, VALUE_INFINITE);
+                r = RootMoves[PVIdx].prevScore;
+                delta = std::min(Value(18), Value(0.4 / (abs(r) / p2) + 6));
+                alpha = std::max(r - delta,-VALUE_INFINITE);
+                beta  = std::min(r + delta, VALUE_INFINITE);
             }
 
             // Start with a small aspiration window and, in the case of a fail
