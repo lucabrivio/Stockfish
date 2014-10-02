@@ -30,6 +30,9 @@
 
 struct SplitPoint;
 
+extern Move LastPlayedMove;
+extern Move LastPonderMove;
+
 namespace Search {
 
 /// The Stack struct keeps track of the information we need to remember from

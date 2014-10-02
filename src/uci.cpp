@@ -34,6 +34,8 @@ using namespace std;
 
 extern void benchmark(const Position& pos, istream& is);
 
+Move LastPlayedMove;
+
 namespace {
 
   // FEN string of the initial position, normal chess
@@ -44,7 +46,6 @@ namespace {
   // draw detection code.
   Search::StateStackPtr SetupStates;
 
-
   // position() is called when engine receives the "position" UCI command.
   // The function sets up the position described in the given FEN string ("fen")
   // or the starting position ("startpos") and then makes the moves given in the
@@ -52,7 +53,9 @@ namespace {
 
   void position(Position& pos, istringstream& is) {
 
-    Move m;
+    Move m = MOVE_NONE;
+    LastPlayedMove = MOVE_NONE;
+    
     string token, fen;
 
     is >> token;
@@ -76,7 +79,8 @@ namespace {
     {
         SetupStates->push(StateInfo());
         pos.do_move(m, SetupStates->top());
-    }
+        LastPlayedMove = m;
+    }    
   }
 
 

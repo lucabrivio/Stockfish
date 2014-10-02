@@ -112,6 +112,7 @@ namespace {
 
 } // namespace
 
+Move LastPonderMove;
 
 /// Search::init() is called during startup to initialize various lookup tables
 
@@ -209,6 +210,8 @@ void Search::think() {
   Threads.timer->run = false; // Stop the timer
 
 finalize:
+
+  LastPonderMove = RootMoves[0].pv[1];
 
   // When search is stopped this info is not printed
   sync_cout << "info nodes " << RootPos.nodes_searched()
@@ -365,7 +368,8 @@ namespace {
             // Stop the search if only one legal move is available or all
             // of the available time has been used.
             if (   RootMoves.size() == 1
-                || Time::now() - SearchTime > TimeMgr.available_time())
+                || Time::now() - SearchTime > TimeMgr.available_time()
+                || (depth > 4 && LastPlayedMove != MOVE_NONE && LastPlayedMove == LastPonderMove))
             {
                 // If we are allowed to ponder do not stop the search now but
                 // keep pondering until the GUI sends "ponderhit" or "stop".
