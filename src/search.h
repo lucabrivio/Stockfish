@@ -32,6 +32,7 @@ struct SplitPoint;
 
 extern Move LastPlayedMove;
 extern Move LastPonderMove;
+extern bool moveImmediately;
 
 namespace Search {
 

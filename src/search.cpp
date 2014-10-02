@@ -113,6 +113,7 @@ namespace {
 } // namespace
 
 Move LastPonderMove;
+bool moveImmediately;
 
 /// Search::init() is called during startup to initialize various lookup tables
 
@@ -254,6 +255,8 @@ namespace {
     BestMoveChanges = 0;
     bestValue = delta = alpha = -VALUE_INFINITE;
     beta = VALUE_INFINITE;
+    
+    moveImmediately = (moveImmediately ? false : (LastPlayedMove != MOVE_NONE && LastPlayedMove == LastPonderMove));
 
     TT.new_search();
     History.clear();
@@ -370,7 +373,7 @@ namespace {
             // of the available time has been used.
             if (   RootMoves.size() == 1
                 || Time::now() - SearchTime > TimeMgr.available_time()
-                || (depth > 4 && LastPlayedMove != MOVE_NONE && LastPlayedMove == LastPonderMove))
+                || (depth > 4 && moveImmediately))
             {
                 // If we are allowed to ponder do not stop the search now but
                 // keep pondering until the GUI sends "ponderhit" or "stop".
