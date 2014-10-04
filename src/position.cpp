@@ -1016,6 +1016,26 @@ void Position::undo_null_move() {
 }
 
 
+/// Position::key_after() computes the new hash key after the given moven. Needed
+/// for speculative prefetch. It doesn't recognize special moves like castling,
+/// en-passant and promotions.
+
+Key Position::key_after(Move m) const {
+
+  Color us = sideToMove;
+  Square from = from_sq(m);
+  Square to = to_sq(m);
+  PieceType pt = type_of(piece_on(from));
+  PieceType captured = type_of(piece_on(to));
+  Key k = st->key ^ Zobrist::side;
+
+  if (captured)
+      k ^= Zobrist::psq[~us][captured][to];
+
+  return k ^ Zobrist::psq[us][pt][to] ^ Zobrist::psq[us][pt][from];
+}
+
+
 /// Position::see() is a static exchange evaluator: It tries to estimate the
 /// material gain or loss resulting from a move.
 
