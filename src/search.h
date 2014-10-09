@@ -30,9 +30,15 @@
 
 struct SplitPoint;
 
-extern Move LastPlayedMove;
-extern Move LastPonderMove;
-extern bool moveImmediately;
+/// The GameHistoryType struct stores some information and statistics about the
+/// current game.
+
+struct GameHistoryType {
+  Move LastPlayedMove, LastPonderMove;
+  bool moveImmediately;
+};
+
+extern volatile GameHistoryType GameHistory;
 
 namespace Search {
 

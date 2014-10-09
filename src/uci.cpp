@@ -32,9 +32,9 @@
 
 using namespace std;
 
-extern void benchmark(const Position& pos, istream& is);
+volatile GameHistoryType GameHistory;
 
-Move LastPlayedMove;
+extern void benchmark(const Position& pos, istream& is);
 
 namespace {
 
@@ -54,7 +54,7 @@ namespace {
   void position(Position& pos, istringstream& is) {
 
     Move m = MOVE_NONE;
-    LastPlayedMove = MOVE_NONE;
+    GameHistory.LastPlayedMove = MOVE_NONE;
     
     string token, fen;
 
@@ -79,7 +79,7 @@ namespace {
     {
         SetupStates->push(StateInfo());
         pos.do_move(m, SetupStates->top());
-        LastPlayedMove = m;
+        GameHistory.LastPlayedMove = m;
     }    
   }
 

@@ -112,9 +112,6 @@ namespace {
 
 } // namespace
 
-Move LastPonderMove;
-bool moveImmediately;
-
 /// Search::init() is called during startup to initialize various lookup tables
 
 void Search::init() {
@@ -213,7 +210,7 @@ void Search::think() {
 
 finalize:
 
-  LastPonderMove = RootMoves[0].pv[1];
+  GameHistory.LastPonderMove = RootMoves[0].pv[1];
 
   // When search is stopped this info is not printed
   sync_cout << "info nodes " << RootPos.nodes_searched()
@@ -256,7 +253,9 @@ namespace {
     bestValue = delta = alpha = -VALUE_INFINITE;
     beta = VALUE_INFINITE;
     
-    moveImmediately = (moveImmediately ? false : (LastPlayedMove != MOVE_NONE && LastPlayedMove == LastPonderMove));
+    GameHistory.moveImmediately =
+      (GameHistory.moveImmediately || (GameHistory.LastPlayedMove == MOVE_NONE) || (GameHistory.LastPlayedMove != GameHistory.LastPonderMove)) ? false :
+      true;
 
     TT.new_search();
     History.clear();
@@ -373,7 +372,7 @@ namespace {
             // of the available time has been used.
             if (   RootMoves.size() == 1
                 || Time::now() - SearchTime > TimeMgr.available_time()
-                || (depth > 4 && moveImmediately))
+                || (depth > 4 && GameHistory.moveImmediately))
             {
                 // If we are allowed to ponder do not stop the search now but
                 // keep pondering until the GUI sends "ponderhit" or "stop".
