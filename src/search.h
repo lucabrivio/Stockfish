@@ -35,6 +35,7 @@ struct SplitPoint;
 
 struct GameHistoryType {
   Move LastPlayedMove, LastPonderMove;
+  int LastMoveTime;
   bool moveImmediately;
 };
 

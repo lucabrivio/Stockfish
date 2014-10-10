@@ -255,7 +255,7 @@ namespace {
     
     GameHistory.moveImmediately =
       (GameHistory.moveImmediately || (GameHistory.LastPlayedMove == MOVE_NONE) || (GameHistory.LastPlayedMove != GameHistory.LastPonderMove)) ? false :
-      true;
+      (GameHistory.LastMoveTime > TimeMgr.available_time() * 2);
 
     TT.new_search();
     History.clear();
@@ -372,8 +372,9 @@ namespace {
             // of the available time has been used.
             if (   RootMoves.size() == 1
                 || Time::now() - SearchTime > TimeMgr.available_time()
-                || (depth > 4 && GameHistory.moveImmediately))
+                || (GameHistory.moveImmediately && Time::now() - SearchTime > TimeMgr.available_time() / 100 + Options["Minimum Thinking Time"]))
             {
+                GameHistory.LastMoveTime = Time::now() - SearchTime;
                 // If we are allowed to ponder do not stop the search now but
                 // keep pondering until the GUI sends "ponderhit" or "stop".
                 if (Limits.ponder)
