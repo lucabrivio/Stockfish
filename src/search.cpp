@@ -112,6 +112,7 @@ namespace {
 
 } // namespace
 
+
 /// Search::init() is called during startup to initialize various lookup tables
 
 void Search::init() {
@@ -255,7 +256,7 @@ namespace {
     
     GameHistory.moveImmediately =
       (GameHistory.moveImmediately || (GameHistory.LastPlayedMove == MOVE_NONE) || (GameHistory.LastPlayedMove != GameHistory.LastPonderMove)) ? false :
-      (GameHistory.LastMoveTime > TimeMgr.available_time() * 2);
+      double(GameHistory.LastMoveTime) / GameHistory.LastBranchingFactor > TimeMgr.available_time();
 
     TT.new_search();
     History.clear();
@@ -375,6 +376,8 @@ namespace {
                 || (GameHistory.moveImmediately && Time::now() - SearchTime > TimeMgr.available_time() / 100 + Options["Minimum Thinking Time"]))
             {
                 GameHistory.LastMoveTime = Time::now() - SearchTime;
+                GameHistory.LastBranchingFactor = pow(double(RootPos.nodes_searched()), 1.0 / depth);
+
                 // If we are allowed to ponder do not stop the search now but
                 // keep pondering until the GUI sends "ponderhit" or "stop".
                 if (Limits.ponder)

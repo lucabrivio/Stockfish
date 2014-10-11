@@ -46,6 +46,7 @@ namespace {
   // draw detection code.
   Search::StateStackPtr SetupStates;
 
+
   // position() is called when engine receives the "position" UCI command.
   // The function sets up the position described in the given FEN string ("fen")
   // or the starting position ("startpos") and then makes the moves given in the
@@ -80,7 +81,7 @@ namespace {
         SetupStates->push(StateInfo());
         pos.do_move(m, SetupStates->top());
         GameHistory.LastPlayedMove = m;
-    }    
+    }
   }
 
 

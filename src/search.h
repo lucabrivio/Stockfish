@@ -37,6 +37,7 @@ struct GameHistoryType {
   Move LastPlayedMove, LastPonderMove;
   int LastMoveTime;
   bool moveImmediately;
+  double LastBranchingFactor;
 };
 
 extern volatile GameHistoryType GameHistory;
