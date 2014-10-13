@@ -370,7 +370,7 @@ namespace {
             if (   RootMoves.size() == 1
                 || Time::now() - SearchTime > TimeMgr.available_time())
             {
-                GameHistory.LastMoveTime = Time::now() - SearchTime;
+                // GameHistory.LastMoveTime = Time::now() - SearchTime;
                 GameHistory.LastBranchingFactor = pow(double(RootPos.nodes_searched()), 1.0 / depth);
 
                 // If we are allowed to ponder do not stop the search now but

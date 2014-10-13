@@ -35,7 +35,7 @@ struct SplitPoint;
 
 struct GameHistoryType {
   Move LastPlayedMove, LastPonderMove;
-  int LastMoveTime;
+  // int LastMoveTime;
   bool PonderHit;
   double LastBranchingFactor;
 };
