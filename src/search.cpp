@@ -253,10 +253,6 @@ namespace {
     BestMoveChanges = 0;
     bestValue = delta = alpha = -VALUE_INFINITE;
     beta = VALUE_INFINITE;
-    
-    GameHistory.moveImmediately =
-      (GameHistory.moveImmediately || (GameHistory.LastPlayedMove == MOVE_NONE) || (GameHistory.LastPlayedMove != GameHistory.LastPonderMove)) ? false :
-      double(GameHistory.LastMoveTime) / GameHistory.LastBranchingFactor > TimeMgr.available_time();
 
     TT.new_search();
     History.clear();
@@ -372,8 +368,7 @@ namespace {
             // Stop the search if only one legal move is available or all
             // of the available time has been used.
             if (   RootMoves.size() == 1
-                || Time::now() - SearchTime > TimeMgr.available_time()
-                || (GameHistory.moveImmediately && Time::now() - SearchTime > TimeMgr.available_time() / 100 + Options["Minimum Thinking Time"]))
+                || Time::now() - SearchTime > TimeMgr.available_time())
             {
                 GameHistory.LastMoveTime = Time::now() - SearchTime;
                 GameHistory.LastBranchingFactor = pow(double(RootPos.nodes_searched()), 1.0 / depth);

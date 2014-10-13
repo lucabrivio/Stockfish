@@ -81,6 +81,7 @@ namespace {
         SetupStates->push(StateInfo());
         pos.do_move(m, SetupStates->top());
         GameHistory.LastPlayedMove = m;
+        GameHistory.PonderHit = (GameHistory.LastPlayedMove == GameHistory.LastPonderMove);
     }
   }
 
