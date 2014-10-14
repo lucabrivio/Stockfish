@@ -143,6 +143,9 @@ void Search::init() {
       FutilityMoveCounts[0][d] = int(2.4 + 0.773 * pow(d + 0.00, 1.8));
       FutilityMoveCounts[1][d] = int(2.9 + 1.045 * pow(d + 0.49, 1.8));
   }
+  
+  GameHistory.PonderHit = false;
+  GameHistory.LastBranchingFactor = 2;  
 }
 
 
