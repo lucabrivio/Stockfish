@@ -55,7 +55,7 @@ namespace {
     const double TStealRatio = (T == OptimumTime ? 0 : StealRatio);
 
     double thisMoveImportance = (move_importance(currentPly)
-      * (double)slowMover * (GameHistory.PonderHit ? .1 : .3) + .4 * GameHistory.LastBranchingFactor
+      * (double)slowMover * ((GameHistory.PonderHit ? .1 : .3) + .4 * GameHistory.LastBranchingFactor)
       ) / 100;
     double otherMovesImportance = 0;
 
