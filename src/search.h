@@ -40,9 +40,7 @@ struct GameHistoryType {
   double LastBranchingFactor;
 };
 
-extern volatile GameHistoryType GameHistory {
-  PonderHit = false,
-  GameHistory.LastBranchingFactor = 2};
+extern volatile GameHistoryType GameHistory;
 
 namespace Search {
 
