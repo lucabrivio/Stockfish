@@ -28,6 +28,8 @@
 #include "tt.h"
 #include "ucioption.h"
 
+#include "timeman.h"
+
 using std::string;
 
 UCI::OptionsMap Options; // Global object
@@ -67,6 +69,9 @@ void init(OptionsMap& o) {
   o["Minimum Thinking Time"] << Option(20, 0, 5000);
   o["Slow Mover"]            << Option(80, 10, 1000);
   o["UCI_Chess960"]          << Option(false);
+
+  o["PHImp"]                 << Option(60, 0, 200);
+  o["NoPHImp"]               << Option(120, 0, 200);
 }
 
 

@@ -49,13 +49,13 @@ namespace {
   }
 
   template<TimeType T>
-  int remaining(int myTime, int movesToGo, int currentPly, int slowMover)
+  int remaining(int myTime, int movesToGo, int currentPly, int slowMover, double phimp, double nophimp)
   {
     const double TMaxRatio   = (T == OptimumTime ? 1 : MaxRatio);
     const double TStealRatio = (T == OptimumTime ? 0 : StealRatio);
 
     double thisMoveImportance = (move_importance(currentPly)
-      * (double)slowMover * (GameHistory.PonderHit ? 0.7 : 1.2)
+      * (double)slowMover * (GameHistory.PonderHit ? phimp : nophimp)
       ) / 100;
     double otherMovesImportance = 0;
 
@@ -89,6 +89,8 @@ void TimeManager::init(const Search::LimitsType& limits, int currentPly, Color u
   */
 
   int hypMTG, hypMyTime, t1, t2;
+  
+  double PHImp = (double)Options["PHImp"] / 100, NoPHImp = (double)Options["NoPHImp"] / 100;
 
   // Read uci parameters
   int moveOverhead    = Options["Move Overhead"];
@@ -110,8 +112,8 @@ void TimeManager::init(const Search::LimitsType& limits, int currentPly, Color u
 
       hypMyTime = std::max(hypMyTime, 0);
 
-      t1 = minThinkingTime + remaining<OptimumTime>(hypMyTime, hypMTG, currentPly, slowMover);
-      t2 = minThinkingTime + remaining<MaxTime>(hypMyTime, hypMTG, currentPly, slowMover);
+      t1 = minThinkingTime + remaining<OptimumTime>(hypMyTime, hypMTG, currentPly, slowMover, PHImp, NoPHImp);
+      t2 = minThinkingTime + remaining<MaxTime>(hypMyTime, hypMTG, currentPly, slowMover, PHImp, NoPHImp);
 
       optimumSearchTime = std::min(optimumSearchTime, t1);
       maximumSearchTime = std::min(maximumSearchTime, t2);
@@ -122,4 +124,5 @@ void TimeManager::init(const Search::LimitsType& limits, int currentPly, Color u
 
   // Make sure that maxSearchTime is not over absoluteMaxSearchTime
   optimumSearchTime = std::min(optimumSearchTime, maximumSearchTime);
+
 }

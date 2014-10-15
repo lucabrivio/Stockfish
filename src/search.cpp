@@ -79,6 +79,7 @@ namespace {
   GainsStats Gains;
   MovesStats Countermoves, Followupmoves;
 
+
   template <NodeType NT, bool SpNode>
   Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, bool cutNode);
 
