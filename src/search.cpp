@@ -144,8 +144,7 @@ void Search::init() {
       FutilityMoveCounts[1][d] = int(2.9 + 1.045 * pow(d + 0.49, 1.8));
   }
   
-  GameHistory.PonderHit = false;
-  // GameHistory.LastBranchingFactor = 2;  
+  GameHistory.PonderHit = false;  
 }
 
 
@@ -373,9 +372,6 @@ namespace {
             if (   RootMoves.size() == 1
                 || Time::now() - SearchTime > TimeMgr.available_time())
             {
-                // GameHistory.LastMoveTime = Time::now() - SearchTime;
-                // GameHistory.LastBranchingFactor = pow(double(RootPos.nodes_searched()), 1.0 / depth);
-
                 // If we are allowed to ponder do not stop the search now but
                 // keep pondering until the GUI sends "ponderhit" or "stop".
                 if (Limits.ponder)
