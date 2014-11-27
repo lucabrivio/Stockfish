@@ -276,30 +276,6 @@ namespace {
 
     while ((s = *pl++) != SQ_NONE)
     {
-        // Find attacked squares, including x-ray attacks for bishops and rooks
-        b = Pt == BISHOP ? attacks_bb<BISHOP>(s, pos.pieces() ^ pos.pieces(Us, QUEEN))
-          : Pt ==   ROOK ? attacks_bb<  ROOK>(s, pos.pieces() ^ pos.pieces(Us, ROOK, QUEEN))
-                         : pos.attacks_from<Pt>(s);
-
-        if (ei.pinnedPieces[Us] & s)
-            b &= LineBB[pos.king_square(Us)][s];
-
-        ei.attackedBy[Us][ALL_PIECES] |= ei.attackedBy[Us][Pt] |= b;
-
-        if (b & ei.kingRing[Them])
-        {
-            ei.kingAttackersCount[Us]++;
-            ei.kingAttackersWeight[Us] += KingAttackWeights[Pt];
-            Bitboard bb = b & ei.attackedBy[Them][KING];
-            if (bb)
-                ei.kingAdjacentZoneAttacksCount[Us] += popcount<Max15>(bb);
-        }
-
-        if (Pt == QUEEN)
-            b &= ~(  ei.attackedBy[Them][KNIGHT]
-                   | ei.attackedBy[Them][BISHOP]
-                   | ei.attackedBy[Them][ROOK]);
-
         int mob = Pt != QUEEN ? popcount<Max15>(b & mobilityArea[Us])
                               : popcount<Full >(b & mobilityArea[Us]);
 
@@ -339,6 +315,9 @@ namespace {
                     && !ei.pi->semiopen_side(Us, file_of(ksq), file_of(s) < file_of(ksq)))
                     score -= (TrappedRook - make_score(mob * 22, 0)) * (1 + !pos.can_castle(Us));
 
+                // Find attacked squares, including x-ray attacks
+                b = attacks_bb<ROOK>(s, pos.pieces() ^ pos.pieces(Us, ROOK, QUEEN));
+
                 break;
             }
 
@@ -366,8 +345,11 @@ namespace {
                     if (pos.piece_on(s + d) == make_piece(Us, PAWN))
                         score -= !pos.empty(s + d + pawn_push(Us))                ? TrappedBishopA1H1 * 4
                                 : pos.piece_on(s + d + d) == make_piece(Us, PAWN) ? TrappedBishopA1H1 * 2
-                                                                          : TrappedBishopA1H1;
+                                                                                  : TrappedBishopA1H1;
                 }
+
+            // Find attacked squares, including x-ray attacks
+                b = attacks_bb<BISHOP>(s, pos.pieces() ^ pos.pieces(Us, QUEEN));
 
                 break;
             }
@@ -383,8 +365,36 @@ namespace {
                     && (pos.pieces(PAWN) & (s + pawn_push(Us))))
                     score += MinorBehindPawn;
 
+            // Find attacked squares
+                b = pos.attacks_from<Pt>(s);
+
                 break;
+
             }
+
+            case QUEEN:
+            {
+                b &= ~(  ei.attackedBy[Them][KNIGHT]
+                       | ei.attackedBy[Them][BISHOP]
+                       | ei.attackedBy[Them][ROOK]);
+
+            // Find attacked squares
+                b = pos.attacks_from<Pt>(s);
+            }
+        }
+
+        if (ei.pinnedPieces[Us] & s)
+            b &= LineBB[pos.king_square(Us)][s];
+
+        ei.attackedBy[Us][ALL_PIECES] |= ei.attackedBy[Us][Pt] |= b;
+
+        if (b & ei.kingRing[Them])
+        {
+            ei.kingAttackersCount[Us]++;
+            ei.kingAttackersWeight[Us] += KingAttackWeights[Pt];
+            Bitboard bb = b & ei.attackedBy[Them][KING];
+            if (bb)
+                ei.kingAdjacentZoneAttacksCount[Us] += popcount<Max15>(bb);
         }
     }
 
