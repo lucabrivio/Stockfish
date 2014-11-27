@@ -310,61 +310,81 @@ namespace {
         if (ei.attackedBy[Them][PAWN] & s)
             score -= ThreatenedByPawn[Pt];
 
-        if (Pt == BISHOP || Pt == KNIGHT)
+        switch (Pt)
         {
-            // Penalty for bishop with same colored pawns
-            if (Pt == BISHOP)
-                score -= BishopPawns * ei.pi->pawns_on_same_color_squares(Us, s);
-
-            // Bishop and knight outpost square
-            if (!(pos.pieces(Them, PAWN) & pawn_attack_span(Us, s)))
-                score += evaluate_outpost<Pt, Us>(pos, ei, s);
-
-            // Bishop or knight behind a pawn
-            if (    relative_rank(Us, s) < RANK_5
-                && (pos.pieces(PAWN) & (s + pawn_push(Us))))
-                score += MinorBehindPawn;
-        }
-
-        if (Pt == ROOK)
-        {
-            // Rook piece attacking enemy pawns on the same rank/file
-            if (relative_rank(Us, s) >= RANK_5)
+            case ROOK:
             {
-                Bitboard pawns = pos.pieces(Them, PAWN) & PseudoAttacks[ROOK][s];
-                if (pawns)
-                    score += popcount<Max15>(pawns) * RookOnPawn;
+
+                // Rook piece attacking enemy pawns on the same rank/file
+                if (relative_rank(Us, s) >= RANK_5)
+                {
+                    Bitboard pawns = pos.pieces(Them, PAWN) & PseudoAttacks[ROOK][s];
+                    if (pawns)
+                        score += popcount<Max15>(pawns) * RookOnPawn;
+                }
+
+                // Give a bonus for a rook on a open or semi-open file
+                if (ei.pi->semiopen_file(Us, file_of(s)))
+                    score += ei.pi->semiopen_file(Them, file_of(s)) ? RookOpenFile : RookSemiOpenFile;
+
+                if (mob > 3 || ei.pi->semiopen_file(Us, file_of(s)))
+                    continue;
+
+                Square ksq = pos.king_square(Us);
+
+                // Penalize rooks which are trapped by a king. Penalize more if the
+                // king has lost its castling capability.
+                if (   ((file_of(ksq) < FILE_E) == (file_of(s) < file_of(ksq)))
+                    && (rank_of(ksq) == rank_of(s) || relative_rank(Us, ksq) == RANK_1)
+                    && !ei.pi->semiopen_side(Us, file_of(ksq), file_of(s) < file_of(ksq)))
+                    score -= (TrappedRook - make_score(mob * 22, 0)) * (1 + !pos.can_castle(Us));
+
+                break;
             }
 
-            // Give a bonus for a rook on a open or semi-open file
-            if (ei.pi->semiopen_file(Us, file_of(s)))
-                score += ei.pi->semiopen_file(Them, file_of(s)) ? RookOpenFile : RookSemiOpenFile;
+            case BISHOP:
+            {
+            // Penalty for bishop with same colored pawns
+                score -= BishopPawns * ei.pi->pawns_on_same_color_squares(Us, s);
 
-            if (mob > 3 || ei.pi->semiopen_file(Us, file_of(s)))
-                continue;
+            // Bishop outpost square
+                if (!(pos.pieces(Them, PAWN) & pawn_attack_span(Us, s)))
+                    score += evaluate_outpost<Pt, Us>(pos, ei, s);
 
-            Square ksq = pos.king_square(Us);
+            // Bishop behind a pawn
+                if (    relative_rank(Us, s) < RANK_5
+                    && (pos.pieces(PAWN) & (s + pawn_push(Us))))
+                    score += MinorBehindPawn;
 
-            // Penalize rooks which are trapped by a king. Penalize more if the
-            // king has lost its castling capability.
-            if (   ((file_of(ksq) < FILE_E) == (file_of(s) < file_of(ksq)))
-                && (rank_of(ksq) == rank_of(s) || relative_rank(Us, ksq) == RANK_1)
-                && !ei.pi->semiopen_side(Us, file_of(ksq), file_of(s) < file_of(ksq)))
-                score -= (TrappedRook - make_score(mob * 22, 0)) * (1 + !pos.can_castle(Us));
-        }
-
-        // An important Chess960 pattern: A cornered bishop blocked by a friendly
-        // pawn diagonally in front of it is a very serious problem, especially
-        // when that pawn is also blocked.
-        if (   Pt == BISHOP
-            && pos.is_chess960()
-            && (s == relative_square(Us, SQ_A1) || s == relative_square(Us, SQ_H1)))
-        {
-            Square d = pawn_push(Us) + (file_of(s) == FILE_A ? DELTA_E : DELTA_W);
-            if (pos.piece_on(s + d) == make_piece(Us, PAWN))
-                score -= !pos.empty(s + d + pawn_push(Us))                ? TrappedBishopA1H1 * 4
-                        : pos.piece_on(s + d + d) == make_piece(Us, PAWN) ? TrappedBishopA1H1 * 2
+            // An important Chess960 pattern: A cornered bishop blocked by a friendly
+            // pawn diagonally in front of it is a very serious problem, especially
+            // when that pawn is also blocked.
+                if (   pos.is_chess960()
+                    && (s == relative_square(Us, SQ_A1) || s == relative_square(Us, SQ_H1)))
+                {
+                    Square d = pawn_push(Us) + (file_of(s) == FILE_A ? DELTA_E : DELTA_W);
+                    if (pos.piece_on(s + d) == make_piece(Us, PAWN))
+                        score -= !pos.empty(s + d + pawn_push(Us))                ? TrappedBishopA1H1 * 4
+                                : pos.piece_on(s + d + d) == make_piece(Us, PAWN) ? TrappedBishopA1H1 * 2
                                                                           : TrappedBishopA1H1;
+                }
+
+                break;
+            }
+
+            case KNIGHT:
+            {
+            // Knight outpost square
+                if (!(pos.pieces(Them, PAWN) & pawn_attack_span(Us, s)))
+                    score += evaluate_outpost<Pt, Us>(pos, ei, s);
+
+            // Knight behind a pawn
+                if (    relative_rank(Us, s) < RANK_5
+                    && (pos.pieces(PAWN) & (s + pawn_push(Us))))
+                    score += MinorBehindPawn;
+
+                break;
+            }
         }
     }
 
