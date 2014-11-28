@@ -276,11 +276,6 @@ namespace {
 
     while ((s = *pl++) != SQ_NONE)
     {
-        int mob = Pt != QUEEN ? popcount<Max15>(b & mobilityArea[Us])
-                              : popcount<Full >(b & mobilityArea[Us]);
-
-        mobility[Us] += MobilityBonus[Pt][mob];
-
         // Decrease score if we are attacked by an enemy pawn. The remaining part
         // of threat evaluation must be done later when we have full attack info.
         if (ei.attackedBy[Them][PAWN] & s)
@@ -318,6 +313,20 @@ namespace {
                 // Find attacked squares, including x-ray attacks
                 b = attacks_bb<ROOK>(s, pos.pieces() ^ pos.pieces(Us, ROOK, QUEEN));
 
+                if (ei.pinnedPieces[Us] & s)
+                    b &= LineBB[pos.king_square(Us)][s];
+
+                ei.attackedBy[Us][ALL_PIECES] |= ei.attackedBy[Us][Pt] |= b;
+
+                if (b & ei.kingRing[Them])
+                {
+                    ei.kingAttackersCount[Us]++;
+                    ei.kingAttackersWeight[Us] += KingAttackWeights[Pt];
+                    Bitboard bb = b & ei.attackedBy[Them][KING];
+                    if (bb)
+                        ei.kingAdjacentZoneAttacksCount[Us] += popcount<Max15>(bb);
+                }
+
                 break;
             }
 
@@ -351,6 +360,20 @@ namespace {
             // Find attacked squares, including x-ray attacks
                 b = attacks_bb<BISHOP>(s, pos.pieces() ^ pos.pieces(Us, QUEEN));
 
+                if (ei.pinnedPieces[Us] & s)
+                    b &= LineBB[pos.king_square(Us)][s];
+
+                ei.attackedBy[Us][ALL_PIECES] |= ei.attackedBy[Us][Pt] |= b;
+
+                if (b & ei.kingRing[Them])
+                {
+                    ei.kingAttackersCount[Us]++;
+                    ei.kingAttackersWeight[Us] += KingAttackWeights[Pt];
+                    Bitboard bb = b & ei.attackedBy[Them][KING];
+                    if (bb)
+                        ei.kingAdjacentZoneAttacksCount[Us] += popcount<Max15>(bb);
+                }
+
                 break;
             }
 
@@ -368,34 +391,55 @@ namespace {
             // Find attacked squares
                 b = pos.attacks_from<Pt>(s);
 
-                break;
+                if (ei.pinnedPieces[Us] & s)
+                    b &= LineBB[pos.king_square(Us)][s];
 
+                ei.attackedBy[Us][ALL_PIECES] |= ei.attackedBy[Us][Pt] |= b;
+
+                if (b & ei.kingRing[Them])
+                {
+                    ei.kingAttackersCount[Us]++;
+                    ei.kingAttackersWeight[Us] += KingAttackWeights[Pt];
+                    Bitboard bb = b & ei.attackedBy[Them][KING];
+                    if (bb)
+                        ei.kingAdjacentZoneAttacksCount[Us] += popcount<Max15>(bb);
+                }
+
+                break;
             }
 
             case QUEEN:
             {
+
+            // Find attacked squares
+                b = pos.attacks_from<Pt>(s);
+
+                if (ei.pinnedPieces[Us] & s)
+                    b &= LineBB[pos.king_square(Us)][s];
+
+                ei.attackedBy[Us][ALL_PIECES] |= ei.attackedBy[Us][Pt] |= b;
+
+                if (b & ei.kingRing[Them])
+                {
+                    ei.kingAttackersCount[Us]++;
+                    ei.kingAttackersWeight[Us] += KingAttackWeights[Pt];
+                    Bitboard bb = b & ei.attackedBy[Them][KING];
+                    if (bb)
+                        ei.kingAdjacentZoneAttacksCount[Us] += popcount<Max15>(bb);
+                }
+
                 b &= ~(  ei.attackedBy[Them][KNIGHT]
                        | ei.attackedBy[Them][BISHOP]
                        | ei.attackedBy[Them][ROOK]);
 
-            // Find attacked squares
-                b = pos.attacks_from<Pt>(s);
+                break;
             }
         }
 
-        if (ei.pinnedPieces[Us] & s)
-            b &= LineBB[pos.king_square(Us)][s];
+        int mob = Pt != QUEEN ? popcount<Max15>(b & mobilityArea[Us])
+                              : popcount<Full >(b & mobilityArea[Us]);
 
-        ei.attackedBy[Us][ALL_PIECES] |= ei.attackedBy[Us][Pt] |= b;
-
-        if (b & ei.kingRing[Them])
-        {
-            ei.kingAttackersCount[Us]++;
-            ei.kingAttackersWeight[Us] += KingAttackWeights[Pt];
-            Bitboard bb = b & ei.attackedBy[Them][KING];
-            if (bb)
-                ei.kingAdjacentZoneAttacksCount[Us] += popcount<Max15>(bb);
-        }
+        mobility[Us] += MobilityBonus[Pt][mob];
     }
 
     if (Trace)
