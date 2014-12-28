@@ -39,11 +39,11 @@ namespace {
     const double TMaxRatio   = (T == OptimumTime ? 1 : MaxRatio);
     const double TStealRatio = (T == OptimumTime ? 0 : StealRatio);
 
-    double thisMoveImportance = slowMover / 100;
+    double thisMoveImportance = double(slowMover) / 100;
     double otherMovesImportance = 0;
 
     for (int i = 1; i < movesToGo; ++i)
-        otherMovesImportance += exp(2 * i / (double(Search::RootPos.game_phase()) - 128.0));
+        otherMovesImportance += exp(2 * double(i) / (double(Search::RootPos.game_phase()) - 192.0));
 
     double ratio1 = (TMaxRatio * thisMoveImportance) / (TMaxRatio * thisMoveImportance + otherMovesImportance);
     double ratio2 = (thisMoveImportance + TStealRatio * otherMovesImportance) / (thisMoveImportance + otherMovesImportance);
