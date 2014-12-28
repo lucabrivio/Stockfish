@@ -33,32 +33,17 @@ namespace {
   const double MaxRatio   = 7.0;  // When in trouble, we can step over reserved time with this ratio
   const double StealRatio = 0.33; // However we must not steal time from remaining moves over this ratio
 
-  const double xscale     = 9.3;
-  const double xshift     = 59.8;
-  const double skewfactor = 0.172;
-
-
-  // move_importance() is a skew-logistic function based on naive statistical
-  // analysis of "how many games are still undecided after n half-moves". Game
-  // is considered "undecided" as long as neither side has >275cp advantage.
-  // Data was extracted from CCRL game database with some simple filtering criteria.
-
-  double move_importance(int ply) {
-
-    return pow((1 + exp((ply - xshift) / xscale)), -skewfactor) + DBL_MIN; // Ensure non-zero
-  }
-
   template<TimeType T>
-  int remaining(int myTime, int movesToGo, int currentPly, int slowMover)
+  int remaining(int myTime, int movesToGo, int slowMover)
   {
     const double TMaxRatio   = (T == OptimumTime ? 1 : MaxRatio);
     const double TStealRatio = (T == OptimumTime ? 0 : StealRatio);
 
-    double thisMoveImportance = (move_importance(currentPly) * slowMover) / 100;
+    double thisMoveImportance = slowMover / 100;
     double otherMovesImportance = 0;
 
     for (int i = 1; i < movesToGo; ++i)
-        otherMovesImportance += move_importance(currentPly + 2 * i);
+        otherMovesImportance += exp(2 * i / (double(Search::RootPos.game_phase()) - 128.0));
 
     double ratio1 = (TMaxRatio * thisMoveImportance) / (TMaxRatio * thisMoveImportance + otherMovesImportance);
     double ratio2 = (thisMoveImportance + TStealRatio * otherMovesImportance) / (thisMoveImportance + otherMovesImportance);
@@ -69,7 +54,7 @@ namespace {
 } // namespace
 
 
-void TimeManager::init(const Search::LimitsType& limits, int currentPly, Color us)
+void TimeManager::init(const Search::LimitsType& limits, Color us)
 {
   /* We support four different kinds of time controls:
 
@@ -101,8 +86,8 @@ void TimeManager::init(const Search::LimitsType& limits, int currentPly, Color u
 
       hypMyTime = std::max(hypMyTime, 0);
 
-      t1 = minThinkingTime + remaining<OptimumTime>(hypMyTime, hypMTG, currentPly, slowMover);
-      t2 = minThinkingTime + remaining<MaxTime>(hypMyTime, hypMTG, currentPly, slowMover);
+      t1 = minThinkingTime + remaining<OptimumTime>(hypMyTime, hypMTG, slowMover);
+      t2 = minThinkingTime + remaining<MaxTime>(hypMyTime, hypMTG, slowMover);
 
       optimumSearchTime = std::min(optimumSearchTime, t1);
       maximumSearchTime = std::min(maximumSearchTime, t2);
