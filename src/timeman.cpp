@@ -43,7 +43,7 @@ namespace {
     double otherMovesImportance = 0;
 
     for (int i = 1; i < movesToGo; ++i)
-        otherMovesImportance += exp(2.0 * double(i) / (double(Search::RootPos.game_phase()) - 256.0));
+        otherMovesImportance += exp(6.0 * double(i) / (double(Search::RootPos.game_phase()) - 320.0));
 
     double ratio1 = (TMaxRatio * thisMoveImportance) / (TMaxRatio * thisMoveImportance + otherMovesImportance);
     double ratio2 = (thisMoveImportance + TStealRatio * otherMovesImportance) / (thisMoveImportance + otherMovesImportance);
