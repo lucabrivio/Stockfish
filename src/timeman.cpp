@@ -38,7 +38,7 @@ namespace {
 
   double move_importance(int ply) {
 
-    return 0.2 + 0.8 * (1 / (1 + exp((ply + 4) / 23 - 4)));
+    return 0.2 + 0.8 * (1.0 / (1.0 + exp((double(ply) + 4.0) / 23.0 - 4.0)));
   }
 
   template<TimeType T>
