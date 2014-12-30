@@ -39,63 +39,63 @@ namespace {
     const double TMaxRatio   = (T == OptimumTime ? 1 : MaxRatio);
     const double TStealRatio = (T == OptimumTime ? 0 : StealRatio);
 
-    double thisMoveImportance = double(slowMover) / 100;
+    double moveImportance = double(slowMover) / 100;
     double otherMovesImportance = 0;
 
     for (int i = 1; i < movesToGo; ++i)
         otherMovesImportance += exp(6.0 * double(i) / (double(Search::RootPos.game_phase()) - 320.0));
 
-    double ratio1 = (TMaxRatio * thisMoveImportance) / (TMaxRatio * thisMoveImportance + otherMovesImportance);
-    double ratio2 = (thisMoveImportance + TStealRatio * otherMovesImportance) / (thisMoveImportance + otherMovesImportance);
+    double ratio1 = (TMaxRatio * moveImportance) / (TMaxRatio * moveImportance + otherMovesImportance);
+    double ratio2 = (moveImportance + TStealRatio * otherMovesImportance) / (moveImportance + otherMovesImportance);
 
-    return int(myTime * std::min(ratio1, ratio2));
+    return myTime * std::min(ratio1, ratio2);
   }
 
 } // namespace
 
 
+/// init() is called at the beginning of the search and calculates the allowed
+/// thinking time out of the time control and current game phase. We support four
+/// different kinds of time controls, passed in 'limits':
+///
+///  inc == 0 && movestogo == 0 means: x basetime  [sudden death!]
+///  inc == 0 && movestogo != 0 means: x moves in y minutes
+///  inc >  0 && movestogo == 0 means: x basetime + z increment
+///  inc >  0 && movestogo != 0 means: x moves in y minutes + z increment
+
 void TimeManager::init(const Search::LimitsType& limits, Color us)
 {
-  /* We support four different kinds of time controls:
-
-      increment == 0 && movesToGo == 0 means: x basetime  [sudden death!]
-      increment == 0 && movesToGo != 0 means: x moves in y minutes
-      increment >  0 && movesToGo == 0 means: x basetime + z increment
-      increment >  0 && movesToGo != 0 means: x moves in y minutes + z increment
-  */
-
-  int hypMTG, hypMyTime, t1, t2;
-
-  // Read uci parameters
-  int moveOverhead    = Options["Move Overhead"];
   int minThinkingTime = Options["Minimum Thinking Time"];
+  int moveOverhead    = Options["Move Overhead"];
   int slowMover       = Options["Slow Mover"];
 
   // Initialize unstablePvFactor to 1 and search times to maximum values
   unstablePvFactor = 1;
   optimumSearchTime = maximumSearchTime = std::max(limits.time[us], minThinkingTime);
 
-  // We calculate optimum time usage for different hypothetical "moves to go"-values and choose the
-  // minimum of calculated search time values. Usually the greatest hypMTG gives the minimum values.
-  for (hypMTG = 1; hypMTG <= (limits.movestogo ? std::min(limits.movestogo, MoveHorizon) : MoveHorizon); ++hypMTG)
+  const int MaxMTG = limits.movestogo ? std::min(limits.movestogo, MoveHorizon) : MoveHorizon;
+
+  // We calculate optimum time usage for different hypothetical "moves to go"-values
+  // and choose the minimum of calculated search time values. Usually the greatest
+  // hypMTG gives the minimum values.
+  for (int hypMTG = 1; hypMTG <= MaxMTG; ++hypMTG)
   {
       // Calculate thinking time for hypothetical "moves to go"-value
-      hypMyTime =  limits.time[us]
-                 + limits.inc[us] * (hypMTG - 1)
-                 - moveOverhead * (2 + std::min(hypMTG, 40));
+      int hypMyTime =  limits.time[us]
+                     + limits.inc[us] * (hypMTG - 1)
+                     - moveOverhead * (2 + std::min(hypMTG, 40));
 
       hypMyTime = std::max(hypMyTime, 0);
 
-      t1 = minThinkingTime + remaining<OptimumTime>(hypMyTime, hypMTG, slowMover);
-      t2 = minThinkingTime + remaining<MaxTime>(hypMyTime, hypMTG, slowMover);
+      int t1 = minThinkingTime + remaining<OptimumTime>(hypMyTime, hypMTG, slowMover);
+      int t2 = minThinkingTime + remaining<MaxTime    >(hypMyTime, hypMTG, slowMover);
 
-      optimumSearchTime = std::min(optimumSearchTime, t1);
-      maximumSearchTime = std::min(maximumSearchTime, t2);
+      optimumSearchTime = std::min(t1, optimumSearchTime);
+      maximumSearchTime = std::min(t2, maximumSearchTime);
   }
 
   if (Options["Ponder"])
       optimumSearchTime += optimumSearchTime / 4;
 
-  // Make sure that maxSearchTime is not over absoluteMaxSearchTime
   optimumSearchTime = std::min(optimumSearchTime, maximumSearchTime);
 }
