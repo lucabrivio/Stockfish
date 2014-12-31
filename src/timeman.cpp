@@ -41,7 +41,7 @@ namespace {
     double gamePhase = Search::RootPos.game_phase(), otherMoves = movesToGo - 1;
 
     double moveImportance = double(slowMover) / 100;
-    double otherMovesImportance = otherMoves - (gamePhase * otherMoves / 320.0);
+    double otherMovesImportance = (otherMoves * (480 - gamePhase)) / 320.0;
 
     double ratio1 = (TMaxRatio * moveImportance) / (TMaxRatio * moveImportance + otherMovesImportance);
     double ratio2 = (moveImportance + TStealRatio * otherMovesImportance) / (moveImportance + otherMovesImportance);
