@@ -21,6 +21,7 @@
 #define TIMEMAN_H_INCLUDED
 
 #include "search.h"
+#include "uci.h"
 
 /// The TimeManager class computes the optimal time to think depending on the
 /// maximum available time, the game move number and other parameters.
@@ -29,7 +30,7 @@ class TimeManager {
 public:
   void init(const Search::LimitsType& limits, Color us);
   void pv_instability(double bestMoveChanges) { unstablePvFactor = 1 + bestMoveChanges; }
-  int available_time() const { return int(optimumSearchTime * unstablePvFactor * (0.96 - 0.50 * (Search::RootPos.game_phase() / PHASE_MIDGAME))); }
+  int available_time() const { return int(optimumSearchTime * unstablePvFactor * (0.001 * Options["SPSA_C"] - 0.001 * Options["SPSA_D"] * (Search::RootPos.game_phase() / PHASE_MIDGAME))); }
   int maximum_time() const { return maximumSearchTime; }
 
 private:

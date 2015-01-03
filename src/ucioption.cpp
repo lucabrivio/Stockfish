@@ -74,6 +74,8 @@ void init(OptionsMap& o) {
 
   o["SPSA_A"]                << Option(442, 250, 750);
   o["SPSA_B"]                << Option(406, 256, 1280);
+  o["SPSA_C"]                << Option(960, 700, 1500);
+  o["SPSA_D"]                << Option(500, 0, 600);
 }
 
 
