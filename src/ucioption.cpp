@@ -72,8 +72,8 @@ void init(OptionsMap& o) {
   o["Syzygy50MoveRule"]      << Option(true);
   o["SyzygyProbeLimit"]      << Option(6, 0, 6);
 
-  o["SPSA_A"]                << Option(420, 250, 750);
-  o["SPSA_B"]                << Option(480, 256, 1280);
+  o["SPSA_A"]                << Option(442, 250, 750);
+  o["SPSA_B"]                << Option(406, 256, 1280);
 }
 
 
