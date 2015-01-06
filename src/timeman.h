@@ -29,7 +29,7 @@ class TimeManager {
 public:
   void init(const Search::LimitsType& limits, Color us);
   void pv_instability(double bestMoveChanges) { unstablePvFactor = 1 + bestMoveChanges; }
-  int available_time() const { return int(optimumSearchTime * unstablePvFactor * (1.00 - 0.50 * (Search::RootPos.game_phase() / PHASE_MIDGAME))); }
+  int available_time() const { return int(optimumSearchTime * unstablePvFactor * (1.00 - 0.40 * (Search::RootPos.game_phase() / PHASE_MIDGAME))); }
   int maximum_time() const { return maximumSearchTime; }
 
 private:
