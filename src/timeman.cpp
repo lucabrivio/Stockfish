@@ -33,13 +33,13 @@ namespace {
   const double StealRatio = 0.33; // However we must not steal time from remaining moves over this ratio
 
   template<TimeType T>
-  int remaining(int myTime, int movesToGo, int slowMover, double A, double B)
+  int remaining(int myTime, int movesToGo, int slowMover)
   {
     const double TMaxRatio   = (T == OptimumTime ? 1 : MaxRatio);
     const double TStealRatio = (T == OptimumTime ? 0 : StealRatio);
 
     double moveImportance = double(slowMover) / 100;
-    double otherMovesImportance = double(movesToGo - 1) * (0.01 * A - 0.01 * B * Search::RootPos.game_phase() / PHASE_MIDGAME);
+    double otherMovesImportance = double(movesToGo - 1) * (0.99 - 0.26 * Search::RootPos.game_phase() / PHASE_MIDGAME);
 
     double ratio1 = (TMaxRatio * moveImportance) / (TMaxRatio * moveImportance + otherMovesImportance);
     double ratio2 = (moveImportance + TStealRatio * otherMovesImportance) / (moveImportance + otherMovesImportance);
@@ -65,9 +65,6 @@ void TimeManager::init(const Search::LimitsType& limits, Color us)
   int moveOverhead    = Options["Move Overhead"];
   int slowMover       = Options["Slow Mover"];
 
-  double SPSA_A       = Options["SPSA_A"];
-  double SPSA_B       = Options["SPSA_B"];
-
   // Initialize unstablePvFactor to 1 and search times to maximum values
   unstablePvFactor = 1;
   optimumSearchTime = maximumSearchTime = std::max(limits.time[us], minThinkingTime);
@@ -86,8 +83,8 @@ void TimeManager::init(const Search::LimitsType& limits, Color us)
 
       hypMyTime = std::max(hypMyTime, 0);
 
-      int t1 = minThinkingTime + remaining<OptimumTime>(hypMyTime, hypMTG, slowMover, SPSA_A, SPSA_B);
-      int t2 = minThinkingTime + remaining<MaxTime    >(hypMyTime, hypMTG, slowMover, SPSA_A, SPSA_B);
+      int t1 = minThinkingTime + remaining<OptimumTime>(hypMyTime, hypMTG, slowMover);
+      int t2 = minThinkingTime + remaining<MaxTime    >(hypMyTime, hypMTG, slowMover);
 
       optimumSearchTime = std::min(t1, optimumSearchTime);
       maximumSearchTime = std::min(t2, maximumSearchTime);
