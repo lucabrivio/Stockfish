@@ -683,6 +683,10 @@ namespace {
 
         tte->save(posKey, VALUE_NONE, BOUND_NONE, DEPTH_NONE, MOVE_NONE, ss->staticEval, TT.generation());
     }
+    
+    // Penalty/bonus for approaching draw
+    if (depth <= ONE_PLY)
+        eval -= (eval - VALUE_DRAW) / (120 - pos.rule50_count());
 
     if (ss->skipEarlyPruning)
         goto moves_loop;
