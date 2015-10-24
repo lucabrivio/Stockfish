@@ -686,7 +686,7 @@ namespace {
     
     // Penalty/bonus for approaching draw
     if (depth <= ONE_PLY)
-        eval -= (eval - VALUE_DRAW) / (108 - pos.rule50_count());
+        eval -= (eval - VALUE_DRAW) / (125 - pos.rule50_count()) * 4;
 
     if (ss->skipEarlyPruning)
         goto moves_loop;
