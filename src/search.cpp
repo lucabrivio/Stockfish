@@ -689,7 +689,7 @@ namespace {
     }
     
     // Penalty/bonus for approaching draw
-    eval -= (eval - VALUE_DRAW) * pos.rule50_count() / 256;
+    eval -= (eval - VALUE_DRAW) * pos.rule50_count() / 128;
 
     if (ss->skipEarlyPruning)
         goto moves_loop;
@@ -1209,7 +1209,7 @@ moves_loop: // When in check search starts from here
                                              : -(ss-1)->staticEval + 2 * Eval::Tempo;
 
         // Penalty/bonus for approaching draw
-        adjustedBestValue = bestValue - (bestValue - VALUE_DRAW) * pos.rule50_count() / 256;
+        adjustedBestValue = bestValue - (bestValue - VALUE_DRAW) * pos.rule50_count() / 128;
 
         // Stand pat. Return immediately if static value is at least beta
         if (adjustedBestValue >= beta)
