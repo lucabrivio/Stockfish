@@ -689,8 +689,7 @@ namespace {
     }
     
     // Penalty/bonus for approaching draw
-    if (depth <= ONE_PLY)
-        eval -= (eval - VALUE_DRAW) * pos.rule50_count() / 256;
+    eval -= (eval - VALUE_DRAW) * pos.rule50_count() / 256;
 
     if (ss->skipEarlyPruning)
         goto moves_loop;
@@ -792,7 +791,7 @@ namespace {
     // Step 10. Internal iterative deepening (skipped when in check)
     if (    depth >= (PvNode ? 5 * ONE_PLY : 8 * ONE_PLY)
         && !ttMove
-        && (PvNode || ss->staticEval + 256 >= beta))
+        && (PvNode || eval + 256 >= beta))
     {
         Depth d = depth - 2 * ONE_PLY - (PvNode ? DEPTH_ZERO : depth / 4);
         ss->skipEarlyPruning = true;
@@ -1141,7 +1140,7 @@ moves_loop: // When in check search starts from here
     TTEntry* tte;
     Key posKey;
     Move ttMove, move, bestMove;
-    Value bestValue, value, ttValue, futilityValue, futilityBase, oldAlpha;
+    Value bestValue, adjustedBestValue, value, ttValue, futilityValue, futilityBase, oldAlpha;
     bool ttHit, givesCheck, evasionPrunable;
     Depth ttDepth;
 
@@ -1189,7 +1188,7 @@ moves_loop: // When in check search starts from here
     if (InCheck)
     {
         ss->staticEval = VALUE_NONE;
-        bestValue = futilityBase = -VALUE_INFINITE;
+        bestValue = futilityBase = adjustedBestValue = -VALUE_INFINITE;
     }
     else
     {
@@ -1209,20 +1208,23 @@ moves_loop: // When in check search starts from here
             (ss-1)->currentMove != MOVE_NULL ? evaluate(pos)
                                              : -(ss-1)->staticEval + 2 * Eval::Tempo;
 
+        // Penalty/bonus for approaching draw
+        adjustedBestValue = bestValue - (bestValue - VALUE_DRAW) * pos.rule50_count() / 256;
+
         // Stand pat. Return immediately if static value is at least beta
-        if (bestValue >= beta)
+        if (adjustedBestValue >= beta)
         {
             if (!ttHit)
                 tte->save(pos.key(), value_to_tt(bestValue, ss->ply), BOUND_LOWER,
                           DEPTH_NONE, MOVE_NONE, ss->staticEval, TT.generation());
 
-            return bestValue;
+            return adjustedBestValue;
         }
 
-        if (PvNode && bestValue > alpha)
-            alpha = bestValue;
+        if (PvNode && adjustedBestValue > alpha)
+            alpha = adjustedBestValue;
 
-        futilityBase = bestValue + 128;
+        futilityBase = adjustedBestValue + 128;
     }
 
     // Initialize a MovePicker object for the current position, and prepare
@@ -1253,13 +1255,13 @@ moves_loop: // When in check search starts from here
 
           if (futilityValue <= alpha)
           {
-              bestValue = std::max(bestValue, futilityValue);
+              adjustedBestValue = std::max(adjustedBestValue, futilityValue);
               continue;
           }
 
           if (futilityBase <= alpha && pos.see(move) <= VALUE_ZERO)
           {
-              bestValue = std::max(bestValue, futilityBase);
+              adjustedBestValue = std::max(adjustedBestValue, futilityBase);
               continue;
           }
       }
@@ -1293,9 +1295,9 @@ moves_loop: // When in check search starts from here
       assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
       // Check for new best move
-      if (value > bestValue)
+      if (value > adjustedBestValue)
       {
-          bestValue = value;
+          adjustedBestValue = value;
 
           if (value > alpha)
           {
@@ -1324,12 +1326,12 @@ moves_loop: // When in check search starts from here
         return mated_in(ss->ply); // Plies to mate from the root
 
     tte->save(posKey, value_to_tt(bestValue, ss->ply),
-              PvNode && bestValue > oldAlpha ? BOUND_EXACT : BOUND_UPPER,
+              PvNode && adjustedBestValue > oldAlpha ? BOUND_EXACT : BOUND_UPPER,
               ttDepth, bestMove, ss->staticEval, TT.generation());
 
-    assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
+    assert(adjustedBestValue > -VALUE_INFINITE && adjustedBestValue < VALUE_INFINITE);
 
-    return bestValue;
+    return adjustedBestValue;
   }
 
 
