@@ -334,7 +334,7 @@ void MainThread::think() {
   Thread* bestThread = this;
   for (Thread* th : Threads)
       if (   th->completedDepth > bestThread->completedDepth
-          && th->rootMoves[0].score > bestThread->rootMoves[0].score)
+          && th->rootMoves[0].score > rootMoves[0].score)
         bestThread = th;
 
   if (bestThread->rootMoves[0].pv[0] != rootMoves[0].pv[0])
