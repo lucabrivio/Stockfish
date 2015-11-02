@@ -332,9 +332,12 @@ void MainThread::think() {
   // Check if there are threads with a better score than main thread.
   Thread* bestThread = this;
   for (Thread* th : Threads)
+  {
+      sync_cout << "info threadstats" << " " << th->idx << " " << th->completedDepth << " " << th->rootMoves[0].score << " " << UCI::move(th->rootMoves[0].pv[0], rootPos.is_chess960()) << sync_endl;
       if (   th->completedDepth > bestThread->completedDepth
           && th->rootMoves[0].score > bestThread->rootMoves[0].score)
         bestThread = th;
+  }
 
   // Send new PV when needed.
   // FIXME: Breaks multiPV, and skill levels
