@@ -332,7 +332,7 @@ void MainThread::think() {
   // Check if there are threads with a better score than main thread.
   Thread* bestThread = this;
   for (Thread* th : Threads)
-      if (8 * (th->completedDepth - bestThread->completedDepth) > bestThread->rootMoves[0].score - th->rootMoves[0].score)
+      if (2 * (th->completedDepth - bestThread->completedDepth) > bestThread->rootMoves[0].score - th->rootMoves[0].score)
         bestThread = th;
 
   // Send new PV when needed.
