@@ -329,14 +329,15 @@ void MainThread::think() {
       wait(Signals.stop);
   }
 
-  // Send information from the thread with the deepest completed iteration if the score is better
-  // than main thread score. This makes sure we don't send deeper moves which failed low at root.
+  // Check if there are threads with a better score than main thread.
   Thread* bestThread = this;
   for (Thread* th : Threads)
       if (8 * (th->completedDepth - bestThread->completedDepth) > bestThread->rootMoves[0].score - th->rootMoves[0].score)
         bestThread = th;
 
-  if (bestThread->rootMoves[0].pv[0] != rootMoves[0].pv[0])
+  // Send new PV when needed.
+  // FIXME: Breaks multiPV, and skill levels
+  if (bestThread != this)
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
 
   sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
