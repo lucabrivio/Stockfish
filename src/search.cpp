@@ -329,7 +329,7 @@ void MainThread::think() {
   // Check if there are threads with a better score than main thread.
   Thread* bestThread = this;
   for (Thread* th : Threads)
-      if (bestThread == this)
+      if (th != this)
         bestThread = th;
 
   // Send new PV when needed.
