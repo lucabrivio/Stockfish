@@ -326,11 +326,9 @@ void MainThread::think() {
       wait(Signals.stop);
   }
 
-  // Check if there are threads with a better score than main thread.
-  Thread* bestThread = this;
-  for (Thread* th : Threads)
-      if (th != this)
-        bestThread = th;
+  // Check if second thread has a better score than main thread.
+  Thread* bestThread = (Threads.size() == 1 || this->rootMoves[0].score >= Threads[1]->rootMoves[0].score) ?
+      this : Threads[1];
 
   // Send new PV when needed.
   // FIXME: Breaks multiPV, and skill levels
