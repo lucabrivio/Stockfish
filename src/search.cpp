@@ -141,6 +141,7 @@ namespace {
   Value value_from_tt(Value v, int ply);
   void update_pv(Move* pv, Move move, Move* childPv);
   void update_stats(const Position& pos, Stack* ss, Move move, Depth depth, Move* quiets, int quietsCnt);
+  void check_time();
 
 } // namespace
 
@@ -298,14 +299,10 @@ void MainThread::think() {
           }
       }
 
-      Threads.timer->run = true;
-      Threads.timer->notify_one(); // Start the recurring timer
-
       search(true); // Let's start searching!
 
-      // Stop the threads and the timer
+      // Stop the threads
       Signals.stop = true;
-      Threads.timer->run = false;
 
       // Wait until all threads have finished
       for (Thread* th : Threads)
@@ -329,10 +326,22 @@ void MainThread::think() {
       wait(Signals.stop);
   }
 
-  sync_cout << "bestmove " << UCI::move(rootMoves[0].pv[0], rootPos.is_chess960());
+  // Check if there are threads with a better score than main thread.
+  Thread* bestThread = this;
+  for (Thread* th : Threads)
+      if (   th->completedDepth > bestThread->completedDepth
+          && th->rootMoves[0].score > bestThread->rootMoves[0].score)
+        bestThread = th;
 
-  if (rootMoves[0].pv.size() > 1 || rootMoves[0].extract_ponder_from_tt(rootPos))
-      std::cout << " ponder " << UCI::move(rootMoves[0].pv[1], rootPos.is_chess960());
+  // Send new PV when needed.
+  // FIXME: Breaks multiPV, and skill levels
+  if (bestThread != this)
+      sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
+
+  sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
+
+  if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
+      std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
 
   std::cout << sync_endl;
 }
@@ -352,6 +361,7 @@ void Thread::search(bool isMainThread) {
 
   bestValue = delta = alpha = -VALUE_INFINITE;
   beta = VALUE_INFINITE;
+  completedDepth = DEPTH_ZERO;
 
   if (isMainThread)
   {
@@ -472,6 +482,9 @@ void Thread::search(bool isMainThread) {
               sync_cout << UCI::pv(rootPos, rootDepth, alpha, beta) << sync_endl;
       }
 
+      if (!Signals.stop)
+          completedDepth = rootDepth;
+
       if (!isMainThread)
           continue;
 
@@ -566,6 +579,20 @@ namespace {
     moveCount = quietCount =  ss->moveCount = 0;
     bestValue = -VALUE_INFINITE;
     ss->ply = (ss-1)->ply + 1;
+
+    // Check for available remaining time
+    if (thisThread->resetCallsCnt.load(std::memory_order_relaxed))
+    {
+        thisThread->resetCallsCnt = false;
+        thisThread->callsCnt = 0;
+    }
+    if (++thisThread->callsCnt > 4096)
+    {
+        for (Thread* th : Threads)
+            th->resetCallsCnt = true;
+
+        check_time();
+    }
 
     // Used to send selDepth info to GUI
     if (PvNode && thisThread->maxPly < ss->ply)
@@ -1437,6 +1464,43 @@ moves_loop: // When in check search starts from here
     return best;
   }
 
+
+  // check_time() is used to print debug info and, more importantly, to detect
+  // when we are out of available time and thus stop the search.
+
+  void check_time() {
+
+    static TimePoint lastInfoTime = now();
+
+    int elapsed = Time.elapsed();
+    TimePoint tick = Limits.startTime + elapsed;
+
+    if (tick - lastInfoTime >= 1000)
+    {
+        lastInfoTime = tick;
+        dbg_print();
+    }
+
+    // An engine may not stop pondering until told so by the GUI
+    if (Limits.ponder)
+        return;
+
+    if (Limits.use_time_management())
+    {
+        bool stillAtFirstMove =    Signals.firstRootMove.load(std::memory_order_relaxed)
+                               && !Signals.failedLowAtRoot.load(std::memory_order_relaxed)
+                               &&  elapsed > Time.available() * 3 / 4;
+
+        if (stillAtFirstMove || elapsed > Time.maximum() - 10)
+            Signals.stop = true;
+    }
+    else if (Limits.movetime && elapsed >= Limits.movetime)
+        Signals.stop = true;
+
+    else if (Limits.nodes && Threads.nodes_searched() >= Limits.nodes)
+            Signals.stop = true;
+  }
+
 } // namespace
 
 
@@ -1546,41 +1610,4 @@ bool RootMove::extract_ponder_from_tt(Position& pos)
     }
 
     return false;
-}
-
-
-/// TimerThread::check_time() is called by when the timer triggers. It is used
-/// to print debug info and, more importantly, to detect when we are out of
-/// available time and thus stop the search.
-
-void TimerThread::check_time() {
-
-  static TimePoint lastInfoTime = now();
-  int elapsed = Time.elapsed();
-
-  if (now() - lastInfoTime >= 1000)
-  {
-      lastInfoTime = now();
-      dbg_print();
-  }
-
-  // An engine may not stop pondering until told so by the GUI
-  if (Limits.ponder)
-      return;
-
-  if (Limits.use_time_management())
-  {
-      bool stillAtFirstMove =    Signals.firstRootMove
-                             && !Signals.failedLowAtRoot
-                             &&  elapsed > Time.available() * 3 / 4;
-
-      if (   stillAtFirstMove
-          || elapsed > Time.maximum() - 2 * TimerThread::Resolution)
-          Signals.stop = true;
-  }
-  else if (Limits.movetime && elapsed >= Limits.movetime)
-      Signals.stop = true;
-
-  else if (Limits.nodes && Threads.nodes_searched() >= Limits.nodes)
-          Signals.stop = true;
 }
