@@ -91,7 +91,7 @@ namespace {
   // stable across multiple search iterations we can fast return the best move.
   struct EasyMoveManager {
 
-    EasyMoveManager() : easyPlayed(0){}
+    EasyMoveManager() : easyMoveCnt(0){}
 
     void clear() {
       stableCnt = 0;
@@ -126,7 +126,7 @@ namespace {
     int stableCnt;
     Key expectedPosKey;
     Move pv[3];
-    int easyPlayed;
+    int easyMoveCnt;
   };
 
   EasyMoveManager EasyMove;
@@ -512,14 +512,15 @@ void Thread::search(bool isMainThread) {
               // fast verification if we matched an easyMove from the previous
               // search.
               if (rootDepth > 4 * ONE_PLY && multiPV == 1)
-                  Time.pv_instability(easyMoveToPlay, EasyMove.easyPlayed, BestMoveChanges);
+                  Time.pv_instability(easyMoveToPlay, EasyMove.easyMoveCnt, BestMoveChanges);
 
               // Stop the search if only one legal move is available or all
               // of the available time has been used.
               if (   rootMoves.size() == 1
                   || Time.elapsed() > Time.available())
               {
-                  EasyMove.easyPlayed = easyMoveToPlay ? EasyMove.easyPlayed + 1 : 0;
+                  EasyMove.easyMoveCnt = easyMoveToPlay ? EasyMove.easyMoveCnt + 1 : 0;
+
                   // If we are allowed to ponder do not stop the search now but
                   // keep pondering until the GUI sends "ponderhit" or "stop".
                   if (Limits.ponder)
