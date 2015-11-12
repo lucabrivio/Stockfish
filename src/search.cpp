@@ -91,6 +91,8 @@ namespace {
   // stable across multiple search iterations we can fast return the best move.
   struct EasyMoveManager {
 
+    EasyMoveManager() : easyMoveCnt(0){}
+
     void clear() {
       stableCnt = 0;
       expectedPosKey = 0;
@@ -124,6 +126,7 @@ namespace {
     int stableCnt;
     Key expectedPosKey;
     Move pv[3];
+    int easyMoveCnt;
   };
 
   EasyMoveManager EasyMove;
@@ -503,19 +506,21 @@ void Thread::search(bool isMainThread) {
       {
           if (!Signals.stop && !Signals.stopOnPonderhit)
           {
-              // Take some extra time if the best move has changed
+              bool easyMoveToPlay = (rootMoves[0].pv[0] == easyMove);
+
+              // Take some extra time if the best move has changed; only do a
+              // fast verification if we matched an easyMove from the previous
+              // search.
               if (rootDepth > 4 * ONE_PLY && multiPV == 1)
-                  Time.pv_instability(BestMoveChanges);
+                  Time.pv_instability(easyMoveToPlay, EasyMove.easyMoveCnt, BestMoveChanges);
 
               // Stop the search if only one legal move is available or all
-              // of the available time has been used or we matched an easyMove
-              // from the previous search and just did a fast verification.
+              // of the available time has been used.
               if (   rootMoves.size() == 1
-                  || Time.elapsed() > Time.available()
-                  || (   rootMoves[0].pv[0] == easyMove
-                      && BestMoveChanges < 0.03
-                      && Time.elapsed() > Time.available() / 10))
+                  || Time.elapsed() > Time.available())
               {
+                  EasyMove.easyMoveCnt = easyMoveToPlay ? EasyMove.easyMoveCnt + 1 : 0;
+
                   // If we are allowed to ponder do not stop the search now but
                   // keep pondering until the GUI sends "ponderhit" or "stop".
                   if (Limits.ponder)
@@ -539,8 +544,8 @@ void Thread::search(bool isMainThread) {
       return;
 
   // Clear any candidate easy move that wasn't stable for the last search
-  // iterations; the second condition prevents consecutive fast moves.
-  if (EasyMove.stableCnt < 6 || Time.elapsed() < Time.available())
+  // iterations.
+  if (EasyMove.stableCnt < 6)
       EasyMove.clear();
 
   // If skill level is enabled, swap best PV line with the sub-optimal one
