@@ -30,8 +30,11 @@
 class TimeManagement {
 public:
   void init(Search::LimitsType& limits, Color us, int ply);
-  void pv_instability(bool easy, int easyPlayed, double bestMoveChanges) { unstablePvFactor = 1.0 + bestMoveChanges - 3.5 * double(easy) / (4.0 + easyPlayed); }
-  int available() const { return int(optimumTime * unstablePvFactor * 0.72); }
+  void pv_instability(bool easy, int easyPlayed, double bestMoveChanges) {
+      double easyOff_1 = .01 * double(easyPercentOff1), easyOff_2 = .01 * double(easyPercentOff2);
+      unstablePvFactor = 1.0 + bestMoveChanges - easyOff_1 * easyOff_2 * double(easy) / (easyOff_2 + (easyOff_1 - easyOff_2) * easyPlayed); }
+  int available() {
+      return int(optimumTime * unstablePvFactor * (0.01 * timeFactorPercent)); }
   int maximum() const { return maximumTime; }
   int elapsed() const { return int(Search::Limits.npmsec ? Threads.nodes_searched() : now() - startTime); }
 
@@ -42,6 +45,12 @@ private:
   int optimumTime;
   int maximumTime;
   double unstablePvFactor;
+
+  int easyPercentOff1 = 87, easyPercentOff2 = 65;
+  TUNE(SetRange(80, 94), easyPercentOff1, SetRange(50,79), easyPercentOff2);
+
+  int timeFactorPercent = 80;
+  TUNE(SetRange(70, 120), timeFactorPercent);
 };
 
 extern TimeManagement Time;
