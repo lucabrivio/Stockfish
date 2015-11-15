@@ -51,10 +51,10 @@ namespace {
   }
 
   template<TimeType T>
-  int remaining(int myTime, int movesToGo, int ply, int slowMover)
+  int remaining(int myTime, int oppTime, int movesToGo, int ply, int slowMover)
   {
     const double TMaxRatio   = (T == OptimumTime ? 1 : MaxRatio);
-    const double TStealRatio = (T == OptimumTime ? 0 : StealRatio);
+    const double TStealRatio = (T == OptimumTime ? 0 : StealRatio * myTime / std::max(oppTime,1));
 
     double moveImportance = (move_importance(ply) * slowMover) / 100;
     double otherMovesImportance = 0;
@@ -118,10 +118,12 @@ void TimeManagement::init(Search::LimitsType& limits, Color us, int ply)
                      + limits.inc[us] * (hypMTG - 1)
                      - moveOverhead * (2 + std::min(hypMTG, 40));
 
+      int hypOppTime = limits.time[~us] + limits.inc[~us] * hypMTG;
+
       hypMyTime = std::max(hypMyTime, 0);
 
-      int t1 = minThinkingTime + remaining<OptimumTime>(hypMyTime, hypMTG, ply, slowMover);
-      int t2 = minThinkingTime + remaining<MaxTime    >(hypMyTime, hypMTG, ply, slowMover);
+      int t1 = minThinkingTime + remaining<OptimumTime>(hypMyTime, hypOppTime, hypMTG, ply, slowMover);
+      int t2 = minThinkingTime + remaining<MaxTime    >(hypMyTime, hypOppTime, hypMTG, ply, slowMover);
 
       optimumTime = std::min(t1, optimumTime);
       maximumTime = std::min(t2, maximumTime);
