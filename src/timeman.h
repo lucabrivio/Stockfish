@@ -30,7 +30,7 @@
 class TimeManagement {
 public:
   void init(Search::LimitsType& limits, Color us, int ply);
-  void pv_instability(bool easy, int easyPlayed, double bestMoveChanges) { unstablePvFactor = 0.80 + bestMoveChanges - 2.12 * double(easy) / (3.05 + easyPlayed); }
+  void pv_instability(bool easy, int easyPlayed, double bestMoveChanges) { unstablePvFactor = 0.80 + bestMoveChanges - 5.45 * double(easy) / (8.28 + easyPlayed); }
   int available() const { return int(optimumTime * unstablePvFactor); }
   int maximum() const { return maximumTime; }
   int elapsed() const { return int(Search::Limits.npmsec ? Threads.nodes_searched() : now() - startTime); }
