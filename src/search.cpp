@@ -389,8 +389,7 @@ void Thread::search() {
       if (!isMainThread)
           rootDepth = std::min(DEPTH_MAX - ONE_PLY,
                                Threads.main()->rootDepth
-                             + Depth(int(2.2 * log(1 + this->idx)
-                                      * (Threads.main()->rootDepth > ONE_PLY ? double(Threads.main()->rootDepth - ONE_PLY) / log(double(Threads.nodes_searched())) : 1.0))));
+                             + Depth(int(2.2 * log1p(this->idx) / log(Threads.nodes_searched() + 20) * (double(Threads.main()->rootDepth)))));
 
       // Age out PV variability metric
       if (isMainThread)
