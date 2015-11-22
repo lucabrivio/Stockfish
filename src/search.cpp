@@ -325,11 +325,10 @@ void MainThread::search() {
       if (th != this)
           th->wait_for_search_finished();
 
-  // Check if there are threads with a better score than main thread.
+  // Check if there are threads with a higher depth than main thread.
   Thread* bestThread = this;
   for (Thread* th : Threads)
-      if (   th->completedDepth > bestThread->completedDepth
-          && th->rootMoves[0].score > bestThread->rootMoves[0].score)
+      if (   th->completedDepth > bestThread->completedDepth)
         bestThread = th;
 
   // Send new PV when needed.
