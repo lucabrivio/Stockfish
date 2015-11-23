@@ -75,6 +75,21 @@ namespace {
     return Reductions[PvNode][i][std::min(d, 63 * ONE_PLY)][std::min(mn, 63)];
   }
 
+  struct Depths {
+    void clear() {
+      for (int i = 0; i < int(DEPTH_MAX) + 1; ++i) {
+        allocatedThreads[i] = 0;
+        completed[i] = false;
+      }
+      maxCompleted = maxAllocated = DEPTH_ZERO;
+      minUncompleted = DEPTH_ZERO + ONE_PLY;
+    }
+
+    int allocatedThreads[int(DEPTH_MAX) + 1];
+    bool completed[int(DEPTH_MAX) + 1];
+    Depth minUncompleted, maxCompleted, maxAllocated;
+  };
+
   // Skill struct is used to implement strength limiting
   struct Skill {
     Skill(int l) : level(l) {}
@@ -126,6 +141,7 @@ namespace {
     Move pv[3];
   };
 
+  Depths SearchedDepths;
   EasyMoveManager EasyMove;
   double BestMoveChanges;
   Value DrawValue[COLOR_NB];
@@ -246,6 +262,8 @@ void MainThread::search() {
       TB::ProbeDepth = DEPTH_ZERO;
   }
 
+  SearchedDepths.clear();
+
   if (rootMoves.empty())
   {
       rootMoves.push_back(RootMove(MOVE_NONE));
@@ -289,7 +307,7 @@ void MainThread::search() {
       for (Thread* th : Threads)
       {
           th->maxPly = 0;
-          th->rootDepth = DEPTH_ZERO;
+          th->rootDepth = DEPTH_ZERO + ONE_PLY;
           if (th != this)
           {
               th->rootPos = Position(rootPos, th);
@@ -328,8 +346,7 @@ void MainThread::search() {
   // Check if there are threads with a better score than main thread.
   Thread* bestThread = this;
   for (Thread* th : Threads)
-      if (   th->completedDepth > bestThread->completedDepth
-          && th->rootMoves[0].score > bestThread->rootMoves[0].score)
+      if (   th->completedDepth > bestThread->completedDepth)
         bestThread = th;
 
   // Send new PV when needed.
@@ -382,11 +399,16 @@ void Thread::search() {
   multiPV = std::min(multiPV, rootMoves.size());
 
   // Iterative deepening loop until requested to stop or target depth reached
-  while (++rootDepth < DEPTH_MAX && !Signals.stop && (!Limits.depth || rootDepth <= Limits.depth))
+  while (rootDepth < DEPTH_MAX && !Signals.stop && (!Limits.depth || rootDepth <= Limits.depth))
   {
-      // Set up the new depth for the helper threads
-      if (!isMainThread)
-          rootDepth = std::min(DEPTH_MAX - ONE_PLY, Threads.main()->rootDepth + Depth(int(2.2 * log(1 + this->idx))));
+      // Set up the new depth
+      for (Depth i = DEPTH_ZERO + ONE_PLY; i <= MAX_PLY; ++i)
+          if (!SearchedDepths.completed[int (i)]) {
+            SearchedDepths.minUncompleted = i;
+            break;
+          }
+      rootDepth = std::min(DEPTH_MAX - ONE_PLY, SearchedDepths.minUncompleted);
+      SearchedDepths.maxAllocated = std::max(SearchedDepths.maxAllocated, rootDepth);
 
       // Age out PV variability metric
       if (isMainThread)
@@ -483,7 +505,11 @@ void Thread::search() {
       }
 
       if (!Signals.stop)
+      {
           completedDepth = rootDepth;
+          SearchedDepths.completed[int(completedDepth)] = true;
+          SearchedDepths.maxCompleted = std::max(SearchedDepths.maxCompleted, completedDepth);
+      }
 
       if (!isMainThread)
           continue;
