@@ -401,13 +401,8 @@ void Thread::search() {
   while (rootDepth < DEPTH_MAX && !Signals.stop && (!Limits.depth || rootDepth <= Limits.depth))
   {
       // Set up the new depth
-      for (Depth i = DEPTH_ZERO + ONE_PLY; i <= MAX_PLY; ++i)
-          if (!SearchedDepths.completed[int (i)]) {
-            SearchedDepths.minUncompleted = i;
-            break;
-          }
       rootDepth = SearchedDepths.minUncompleted;
-      while (SearchedDepths.allocatedThreads[int(rootDepth)] >= int(pow(int(rootDepth - SearchedDepths.minUncompleted) + 1, 1.5)) && rootDepth < DEPTH_MAX - ONE_PLY)
+      while (SearchedDepths.allocatedThreads[int(rootDepth)] >= int(pow(2.1 + int(rootDepth - SearchedDepths.minUncompleted), 1.5)) && rootDepth < DEPTH_MAX - ONE_PLY)
           ++rootDepth;
       ++SearchedDepths.allocatedThreads[int(rootDepth)];
 
@@ -510,6 +505,11 @@ void Thread::search() {
           completedDepth = rootDepth;
           --SearchedDepths.allocatedThreads[int(rootDepth)];
           SearchedDepths.completed[int(completedDepth)] = true;
+          for (Depth i = DEPTH_ZERO + ONE_PLY; i <= MAX_PLY; ++i)
+              if (!SearchedDepths.completed[int (i)]) {
+                  SearchedDepths.minUncompleted = i;
+                  break;
+              }
       }
 
       if (!isMainThread)
