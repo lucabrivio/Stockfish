@@ -81,13 +81,12 @@ namespace {
         allocatedThreads[i] = 0;
         completed[i] = false;
       }
-      maxCompleted = maxAllocated = DEPTH_ZERO;
       minUncompleted = DEPTH_ZERO + ONE_PLY;
     }
 
     int allocatedThreads[int(DEPTH_MAX) + 1];
     bool completed[int(DEPTH_MAX) + 1];
-    Depth minUncompleted, maxCompleted, maxAllocated;
+    Depth minUncompleted;
   };
 
   // Skill struct is used to implement strength limiting
@@ -407,8 +406,10 @@ void Thread::search() {
             SearchedDepths.minUncompleted = i;
             break;
           }
-      rootDepth = std::min(DEPTH_MAX - ONE_PLY, SearchedDepths.minUncompleted);
-      SearchedDepths.maxAllocated = std::max(SearchedDepths.maxAllocated, rootDepth);
+      rootDepth = SearchedDepths.minUncompleted;
+      while (SearchedDepths.allocatedThreads[int(rootDepth)] >= int(pow(int(rootDepth - SearchedDepths.minUncompleted) + 1, 1.5)) && rootDepth < DEPTH_MAX - ONE_PLY)
+          ++rootDepth;
+      ++SearchedDepths.allocatedThreads[int(rootDepth)];
 
       // Age out PV variability metric
       if (isMainThread)
@@ -507,8 +508,8 @@ void Thread::search() {
       if (!Signals.stop)
       {
           completedDepth = rootDepth;
+          --SearchedDepths.allocatedThreads[int(rootDepth)];
           SearchedDepths.completed[int(completedDepth)] = true;
-          SearchedDepths.maxCompleted = std::max(SearchedDepths.maxCompleted, completedDepth);
       }
 
       if (!isMainThread)
