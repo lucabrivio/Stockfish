@@ -730,6 +730,10 @@ namespace {
                  &&  ei.pi->pawn_span(strongSide) <= 1
                  && !pos.pawn_passed(~strongSide, pos.square<KING>(~strongSide)))
             sf = ei.pi->pawn_span(strongSide) ? ScaleFactor(51) : ScaleFactor(37);
+        // Endings with equal pieces and an odd number of pawn asymmetries are a bit drawish.
+        else if (    pos.non_pawn_material(WHITE) == pos.non_pawn_material(BLACK)
+                 && !(ei.pi->pawn_asymmetry() % 2))
+            sf = ScaleFactor(48);
     }
 
     return sf;
