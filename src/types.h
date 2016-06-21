@@ -165,6 +165,10 @@ enum ScaleFactor {
   SCALE_FACTOR_NONE    = 255
 };
 
+enum ScaleType {
+  MIDGAME, ENDGAME
+};
+
 enum Bound {
   BOUND_NONE,
   BOUND_UPPER,

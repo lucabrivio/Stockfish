@@ -701,35 +701,46 @@ namespace {
 
 
   // evaluate_scale_factor() computes the scale factor for the winning side
+  template <ScaleType ST>
   ScaleFactor evaluate_scale_factor(const Position& pos, const EvalInfo& ei, Value eg) {
 
     Color strongSide = eg > VALUE_DRAW ? WHITE : BLACK;
     ScaleFactor sf = ei.me->scale_factor(pos, strongSide);
 
-    // If we don't already have an unusual scale factor, check for certain
-    // types of endgames, and use a lower scale for those.
-    if (    ei.me->game_phase() < PHASE_MIDGAME
-        && (sf == SCALE_FACTOR_NORMAL || sf == SCALE_FACTOR_ONEPAWN))
+    if (ST == MIDGAME)
     {
-        if (pos.opposite_bishops())
-        {
-            // Endgame with opposite-colored bishops and no other pieces (ignoring pawns)
-            // is almost a draw, in case of KBP vs KB, it is even more a draw.
-            if (   pos.non_pawn_material(WHITE) == BishopValueMg
-                && pos.non_pawn_material(BLACK) == BishopValueMg)
-                sf = more_than_one(pos.pieces(PAWN)) ? ScaleFactor(31) : ScaleFactor(9);
+      sf = ScaleFactor(64
+                     -     (pos.count<KNIGHT>(WHITE) * pos.count<KNIGHT>(BLACK) == 1)
+	             -     (pos.count<BISHOP>(WHITE) * pos.count<BISHOP>(BLACK) == 1)
+	             - 2 * (pos.count<ROOK>(WHITE) * pos.count<ROOK>(BLACK) == 1));
+    }
+    else
+    {
+      // If we don't already have an unusual scale factor, check for certain
+      // types of endgames, and use a lower scale for those.
+      if (    ei.me->game_phase() < PHASE_MIDGAME
+          && (sf == SCALE_FACTOR_NORMAL || sf == SCALE_FACTOR_ONEPAWN))
+      {
+          if (pos.opposite_bishops())
+          {
+              // Endgame with opposite-colored bishops and no other pieces (ignoring pawns)
+              // is almost a draw, in case of KBP vs KB, it is even more a draw.
+              if (   pos.non_pawn_material(WHITE) == BishopValueMg
+                  && pos.non_pawn_material(BLACK) == BishopValueMg)
+                  sf = more_than_one(pos.pieces(PAWN)) ? ScaleFactor(31) : ScaleFactor(9);
 
-            // Endgame with opposite-colored bishops, but also other pieces. Still
-            // a bit drawish, but not as drawish as with only the two bishops.
-            else
-                sf = ScaleFactor(46);
-        }
-        // Endings where weaker side can place his king in front of the opponent's
-        // pawns are drawish.
-        else if (    abs(eg) <= BishopValueEg
-                 &&  ei.pi->pawn_span(strongSide) <= 1
-                 && !pos.pawn_passed(~strongSide, pos.square<KING>(~strongSide)))
-            sf = ei.pi->pawn_span(strongSide) ? ScaleFactor(51) : ScaleFactor(37);
+              // Endgame with opposite-colored bishops, but also other pieces. Still
+              // a bit drawish, but not as drawish as with only the two bishops.
+              else
+                  sf = ScaleFactor(46);
+          }
+          // Endings where weaker side can place his king in front of the opponent's
+          // pawns are drawish.
+          else if (    abs(eg) <= BishopValueEg
+                   &&  ei.pi->pawn_span(strongSide) <= 1
+                   && !pos.pawn_passed(~strongSide, pos.square<KING>(~strongSide)))
+              sf = ei.pi->pawn_span(strongSide) ? ScaleFactor(51) : ScaleFactor(37);
+      }
     }
 
     return sf;
@@ -822,11 +833,12 @@ Value Eval::evaluate(const Position& pos) {
   score += evaluate_initiative(pos, ei.pi->pawn_asymmetry(), eg_value(score));
 
   // Evaluate scale factor for the winning side
-  ScaleFactor sf = evaluate_scale_factor(pos, ei, eg_value(score));
+  ScaleFactor mg_sf = evaluate_scale_factor<MIDGAME>(pos, ei, mg_value(score));
+  ScaleFactor eg_sf = evaluate_scale_factor<ENDGAME>(pos, ei, eg_value(score));
 
   // Interpolate between a middlegame and a (scaled by 'sf') endgame score
-  Value v =  mg_value(score) * int(ei.me->game_phase())
-           + eg_value(score) * int(PHASE_MIDGAME - ei.me->game_phase()) * sf / SCALE_FACTOR_NORMAL;
+  Value v =  mg_value(score) * int(ei.me->game_phase()) * mg_sf / SCALE_FACTOR_NORMAL
+           + eg_value(score) * int(PHASE_MIDGAME - ei.me->game_phase()) * eg_sf / SCALE_FACTOR_NORMAL;
 
   v /= int(PHASE_MIDGAME);
 
