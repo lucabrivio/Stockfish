@@ -709,10 +709,14 @@ namespace {
 
     if (ST == MIDGAME)
     {
-      sf = ScaleFactor(64
-                     -     (pos.count<KNIGHT>(WHITE) * pos.count<KNIGHT>(BLACK) == 1)
-	             -     (pos.count<BISHOP>(WHITE) * pos.count<BISHOP>(BLACK) == 1)
-	             - 2 * (pos.count<ROOK>(WHITE) * pos.count<ROOK>(BLACK) == 1));
+      sf = ScaleFactor( 64
+                      -      (pos.count<KNIGHT>(WHITE) * pos.count<KNIGHT>(BLACK) == 1)
+                      -      (pos.count<BISHOP>(WHITE) * pos.count<BISHOP>(BLACK) == 1)
+                      -  2 * (pos.count<ROOK>(WHITE) * pos.count<ROOK>(BLACK) == 1)
+                      -      (pos.count<ROOK>(WHITE) + pos.count<ROOK>(BLACK) == 0)
+                      -      (ei.pi->pawn_span(WHITE) + ei.pi->pawn_span(BLACK) > 11 ? 5 : 3)
+                           * std::max(0, ei.pi->opposed(strongSide) - 2)
+		      );
     }
     else
     {
