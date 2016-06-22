@@ -712,9 +712,10 @@ namespace {
       sf = ScaleFactor( 64
                       -      (pos.count<KNIGHT>(WHITE) * pos.count<KNIGHT>(BLACK) == 1)
                       -      (pos.count<BISHOP>(WHITE) * pos.count<BISHOP>(BLACK) == 1)
-                      -  2 * (pos.count<ROOK>(WHITE) * pos.count<ROOK>(BLACK) == 1)
-                      -      (ei.pi->pawn_span(WHITE) + ei.pi->pawn_span(BLACK)) / 6
-                           * std::max(0, ei.pi->opposed(strongSide) - ei.pi->pawn_asymmetry())
+                      -  4 * (pos.count<ROOK>(WHITE) * pos.count<ROOK>(BLACK) == 1)
+                      - std::max(   0,
+                                 (  ei.pi->pawn_span(WHITE) + ei.pi->pawn_span(BLACK)) / 6 * ei.pi->opposed(strongSide)
+				  - ei.pi->pawn_asymmetry())
 		      );
     }
     else
