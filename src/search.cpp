@@ -374,7 +374,7 @@ void Thread::search() {
       if (!mainThread)
       {
           const Row& row = HalfDensity[(idx - 1) % HalfDensitySize];
-          if(row[(rootDepth + rootPos.game_ply()) % row.size()] && (rootDepth <= Threads.main()->rootDepth + int(log2(Threads.size())) * ONE_PLY))
+          if (row[(rootDepth + rootPos.game_ply()) % row.size()] && (rootDepth < (Threads.main()->rootDepth + int(log2(Threads.size())) + 2) * ONE_PLY))
              continue;
       }
 
