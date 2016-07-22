@@ -741,9 +741,7 @@ namespace {
     if (ST == MIDGAME)
     {
       sf = ScaleFactor(64
-                     -     (pos.count<KNIGHT>(WHITE) * pos.count<KNIGHT>(BLACK) == 1)
-	             -     (pos.count<BISHOP>(WHITE) * pos.count<BISHOP>(BLACK) == 1)
-	             - 2 * (pos.count<ROOK>(WHITE) * pos.count<ROOK>(BLACK) == 1));
+	             - 4 * ei.pi->open_files());
     }
     else
     {
