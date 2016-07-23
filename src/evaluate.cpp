@@ -745,7 +745,7 @@ namespace {
           sf = (pos.count<BISHOP>(WHITE) + pos.count<BISHOP>(BLACK) > 2) ? ScaleFactor(58) : ScaleFactor(48);
       }
       else
-          sf = ScaleFactor(68);
+          sf = ScaleFactor(52 + 3 * (pos.count<KNIGHT>(WHITE) + pos.count<KNIGHT>(BLACK)));
     }
     else
     {
