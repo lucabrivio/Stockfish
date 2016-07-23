@@ -740,8 +740,12 @@ namespace {
 
     if (ST == MIDGAME)
     {
-      sf = ScaleFactor(64
-	             - 4 * ei.pi->open_files());
+      if (ei.pi->open_center())
+      {
+          sf = (pos.count<BISHOP>(WHITE) + pos.count<BISHOP>(BLACK) > 2) ? ScaleFactor(60) : ScaleFactor(54);
+      }
+      else
+          sf = ScaleFactor(68);
     }
     else
     {
