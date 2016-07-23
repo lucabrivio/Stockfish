@@ -742,7 +742,7 @@ namespace {
     {
       if (ei.pi->open_center())
       {
-          sf = (pos.count<BISHOP>(WHITE) + pos.count<BISHOP>(BLACK) > 2) ? ScaleFactor(60) : ScaleFactor(54);
+          sf = (pos.count<BISHOP>(WHITE) + pos.count<BISHOP>(BLACK) > 2) ? ScaleFactor(58) : ScaleFactor(48);
       }
       else
           sf = ScaleFactor(68);
