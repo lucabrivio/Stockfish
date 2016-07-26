@@ -184,7 +184,7 @@ namespace {
   };
 
   const Score KnightReach[5] = {
-    S(0, 0), S(12, 8), S(30, 20), S(45, 30), S(57, 38)
+    S(0, 0), S(6, 4), S(15, 10), S(22, 15), S(28, 20)
   };
 
   // Assorted bonuses and penalties used by evaluation
