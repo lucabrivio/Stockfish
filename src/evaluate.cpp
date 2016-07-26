@@ -183,10 +183,13 @@ namespace {
     S(-20,-12), S( 1, -8), S( 2, 10), S( 9, 10)
   };
 
+  const Score KnightReach[5] = {
+    S(0, 0), S(12, 8), S(30, 20), S(45, 30), S(57, 38)
+  };
+
   // Assorted bonuses and penalties used by evaluation
   const Score MinorBehindPawn     = S(16,  0);
   const Score BishopPawns         = S( 8, 12);
-  const Score KnightReach         = S(15, 10);
   const Score RookOnPawn          = S( 8, 24);
   const Score TrappedRook         = S(92,  0);
   const Score SafeCheck           = S(20, 20);
@@ -322,7 +325,7 @@ namespace {
 
             // Bonus for enemy pieces in squares easily reachable by the knight
             else
-                score += KnightReach * popcount(pos.pieces(Them) & KnightIsodistanceBB[s][2]);
+                score += KnightReach[std::min(4, popcount((pos.pieces(Them) ^ pos.pieces(Them, KNIGHT)) & KnightIsodistanceBB[s][2]))];
 
             // An important Chess960 pattern: A cornered bishop blocked by a friendly
             // pawn diagonally in front of it is a very serious problem, especially
