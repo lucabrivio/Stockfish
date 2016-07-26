@@ -74,7 +74,7 @@ extern Bitboard ForwardBB[COLOR_NB][SQUARE_NB];
 extern Bitboard PassedPawnMask[COLOR_NB][SQUARE_NB];
 extern Bitboard PawnAttackSpan[COLOR_NB][SQUARE_NB];
 extern Bitboard PseudoAttacks[PIECE_TYPE_NB][SQUARE_NB];
-extern Bitboard KnightIsodistanceBB[SQUARE_NB][8];
+extern Bitboard KnightIsodistanceBB[SQUARE_NB][7];
 
 
 /// Overloads of bitwise operators between a Bitboard and a Square for testing
