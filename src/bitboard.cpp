@@ -49,6 +49,7 @@ Bitboard ForwardBB[COLOR_NB][SQUARE_NB];
 Bitboard PassedPawnMask[COLOR_NB][SQUARE_NB];
 Bitboard PawnAttackSpan[COLOR_NB][SQUARE_NB];
 Bitboard PseudoAttacks[PIECE_TYPE_NB][SQUARE_NB];
+Bitboard KnightIsodistanceBB[SQUARE_NB][8];
 
 namespace {
 
@@ -156,8 +157,17 @@ void Bitboards::init() {
 
   for (Square s = SQ_A1; s <= SQ_H8; ++s)
   {
-      SquareBB[s] = 1ULL << s;
+      SquareBB[s] = KnightIsodistanceBB[s][0] = 1ULL << s;
       BSFTable[bsf_index(SquareBB[s])] = s;
+
+      Bitboard uncovered = 0xFF;
+      for (int i = 1; uncovered; ++i) // FIXME; some may stay uninitialized!
+      {
+          Bitboard previous = KnightIsodistanceBB[s][i - 1];
+          KnightIsodistanceBB[s][i] = ( (previous << 17) | (previous << 15) | (previous << 10) | (previous <<  6)
+                                       | (previous >>  6) | (previous >> 10) | (previous >> 15) | (previous >> 17)) & uncovered;
+          uncovered &= ~(KnightIsodistanceBB[s][i]);
+      }
   }
 
   for (Bitboard b = 2; b < 256; ++b)
