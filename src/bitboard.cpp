@@ -164,13 +164,18 @@ void Bitboards::init() {
       BSFTable[bsf_index(SquareBB[s])] = s;
 
       Bitboard to_reach = ~0ULL;
-      for (int i = 1; to_reach; ++i) // FIXME; some may stay uninitialized!
+      for (int i = 1; i < 7; ++i)
       {
-          Bitboard p = KnightIsodistanceBB[s][i - 1];
-          KnightIsodistanceBB[s][i] = (   ((p & ~FileHBB) << 17) | ((p & ~FileABB) << 15) | ((p & ~FileGHBB) << 10) | ((p & ~FileABBB) << 6)
-                                        | ((p & ~FileABB) >> 17) | ((p & ~FileHBB) >> 15) | ((p & ~FileABBB) >> 10) | ((p & ~FileGHBB) >> 6)
+          if (to_reach)
+	  {
+              Bitboard p = KnightIsodistanceBB[s][i - 1];
+              KnightIsodistanceBB[s][i] = (   ((p & ~FileHBB) << 17) | ((p & ~FileABB) << 15) | ((p & ~FileGHBB) << 10) | ((p & ~FileABBB) << 6)
+                                            | ((p & ~FileABB) >> 17) | ((p & ~FileHBB) >> 15) | ((p & ~FileABBB) >> 10) | ((p & ~FileGHBB) >> 6)
                                       ) & to_reach;
-          to_reach &= ~(KnightIsodistanceBB[s][i]);
+              to_reach &= ~(KnightIsodistanceBB[s][i]);
+	  }
+          else
+              KnightIsodistanceBB[s][i] = 0;
       }
   }
 
