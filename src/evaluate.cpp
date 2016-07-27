@@ -183,12 +183,6 @@ namespace {
     S(-20,-12), S( 1, -8), S( 2, 10), S( 9, 10)
   };
 
-  const Score KnightReach[4][5] = {
-    {}, {},
-    {S(0, 0), S(6, 4), S(15, 10), S(22, 15), S(28, 20)},
-    {S(0, 0), S(2, 1), S( 5,  3), S( 7,  4), S( 9,  5)}
-  };
-
   // Assorted bonuses and penalties used by evaluation
   const Score MinorBehindPawn     = S(16,  0);
   const Score BishopPawns         = S( 8, 12);
@@ -196,6 +190,7 @@ namespace {
   const Score TrappedRook         = S(92,  0);
   const Score SafeCheck           = S(20, 20);
   const Score OtherCheck          = S(10, 10);
+  const Score KnightCheckThreat   = S( 4,  2);
   const Score ThreatByHangingPawn = S(71, 61);
   const Score LooseEnemies        = S( 0, 25);
   const Score WeakQueen           = S(35,  0);
@@ -324,11 +319,6 @@ namespace {
             // Penalty for pawns on the same color square as the bishop
             if (Pt == BISHOP)
                 score -= BishopPawns * ei.pi->pawns_on_same_color_squares(Us, s);
-
-            // Bonus for enemy pieces in squares easily reachable by the knight
-            else
-                score += KnightReach[2][std::min(4, popcount((pos.pieces(Them) ^ pos.pieces(Them, KNIGHT)) & KnightIsodistanceBB[s][2]))]
-                      +  KnightReach[3][std::min(4, popcount((pos.pieces(Them) ^ pos.pieces(Them, KNIGHT)) & KnightIsodistanceBB[s][3]))];
 
             // An important Chess960 pattern: A cornered bishop blocked by a friendly
             // pawn diagonally in front of it is a very serious problem, especially
@@ -476,6 +466,9 @@ namespace {
 
         else if (b & other)
             score -= OtherCheck;
+
+        b = KnightIsodistanceBB[ksq][2] & ei.attackedBy[Them][KNIGHT] & safe;
+        score -= KnightCheckThreat * popcount(b);
 
         // Finally, extract the king danger score from the KingDanger[]
         // array and subtract the score from the evaluation.
