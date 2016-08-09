@@ -964,7 +964,7 @@ moves_loop: // When in check search starts from here
           &&  moveCount > 1
           && !captureOrPromotion)
       {
-          Depth r = reduction<PvNode>(improving, depth, moveCount + log2(1 + pos.this_thread()->idx));
+          Depth r = reduction<PvNode>(improving, depth, moveCount + (pos.this_thread()->idx == 0) ? 0 : std::max(0, 2 + Threads.main()->rootDepth - thisThread->rootDepth));
           Value val = thisThread->history[moved_piece][to_sq(move)]
                      +    (cmh  ? (*cmh )[moved_piece][to_sq(move)] : VALUE_ZERO)
                      +    (fmh  ? (*fmh )[moved_piece][to_sq(move)] : VALUE_ZERO)
