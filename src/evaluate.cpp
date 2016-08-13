@@ -935,8 +935,11 @@ void Eval::init() {
       KingDanger[i] = make_score(t * 268 / 7700, 0);
   }
 
+  int A = 218, B = 100;
+TUNE(SetRange(160, 270), A, SetRange(50, 200), B);
+
   for (int i = 0; i <= 24; ++i)
   {
-      SpaceBonus[i] = 218.0 * (1.0 - exp(-double(i) / 10.0));
+      SpaceBonus[i] = double(A) * (1.0 - exp(-i * B / 1000));
   }
 }
