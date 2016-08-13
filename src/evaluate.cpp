@@ -923,6 +923,9 @@ std::string Eval::trace(const Position& pos) {
 
 /// init() computes evaluation weights, usually at startup
 
+int A = 218, B = 100;
+TUNE(SetRange(160, 270), A, SetRange(50, 200), B, Eval::init);
+
 void Eval::init() {
 
   const int MaxSlope = 322;
@@ -934,9 +937,6 @@ void Eval::init() {
       t = std::min(Peak, std::min(i * i - 16, t + MaxSlope));
       KingDanger[i] = make_score(t * 268 / 7700, 0);
   }
-
-  int A = 218, B = 100;
-TUNE(SetRange(160, 270), A, SetRange(50, 200), B);
 
   for (int i = 0; i <= 24; ++i)
   {
