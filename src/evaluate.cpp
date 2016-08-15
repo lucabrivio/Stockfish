@@ -937,6 +937,6 @@ void Eval::init() {
 
   for (int i = 0; i <= 24; ++i)
   {
-      SpaceBonus[i] = 218.0 * (1.0 - exp(-double(i) / 10.0));
+      SpaceBonus[i] = 197.0 * (1.0 - exp(-0.134 * i));
   }
 }
