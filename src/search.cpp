@@ -1174,9 +1174,13 @@ moves_loop: // When in check search starts from here
     ss->ply = (ss-1)->ply + 1;
 
     // Check for an instant draw or if the maximum ply has been reached
-    if (pos.is_rep() || pos.is_draw() || ss->ply >= MAX_PLY)
-        return (ss->ply >= MAX_PLY || pos.is_rep()) && !InCheck ? evaluate(pos)
+    if (pos.is_draw() || ss->ply >= MAX_PLY)
+        return ss->ply >= MAX_PLY && !InCheck ? evaluate(pos)
                                               : DrawValue[pos.side_to_move()];
+
+    if (pos.is_rep())
+        return DrawValue[pos.side_to_move()] + evaluate(pos) / (InCheck ? 64 : 8);
+
 
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
