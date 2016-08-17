@@ -1179,7 +1179,7 @@ moves_loop: // When in check search starts from here
                                               : DrawValue[pos.side_to_move()];
 
     if (pos.is_rep())
-        return DrawValue[pos.side_to_move()] + evaluate(pos) / (InCheck ? 64 : 8);
+        return DrawValue[pos.side_to_move()] + evaluate(pos) / 64;
 
 
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
