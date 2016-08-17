@@ -211,6 +211,8 @@ namespace {
   // index to KingDanger[].
   Score KingDanger[512];
 
+  int KingTropism[41];
+
   // KingAttackWeights[PieceType] contains king attack weights by piece type
   const int KingAttackWeights[PIECE_TYPE_NB] = { 0, 0, 7, 5, 4, 1 };
 
@@ -581,7 +583,7 @@ namespace {
        | (Us == WHITE ? b >> 4 : b << 4);
 
     // Count all these squares with a single popcount
-    score += make_score(7 * popcount(b), 0);
+    score += make_score(KingTropism[popcount(b)], 0);
 
     if (DoTrace)
         Trace::add(THREAT, Us, score);
@@ -932,5 +934,10 @@ void Eval::init() {
   {
       t = std::min(Peak, std::min(i * i - 16, t + MaxSlope));
       KingDanger[i] = make_score(t * 268 / 7700, 0);
+  }
+
+  for (int i = 0; i <= 40; ++i)
+  {
+      KingTropism[i]= 150.0 / (1.0 + exp(4.2 - 0.5 * i));
   }
 }
