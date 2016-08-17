@@ -1032,13 +1032,21 @@ Value Position::see(Move m) const {
 }
 
 
-/// Position::is_draw() tests whether the position is drawn by 50-move rule
-/// or by repetition. It does not detect stalemates.
+/// Position::is_draw() tests whether the position is drawn by 50-move rule.
+/// It does not detect repetitions and stalemates.
 
 bool Position::is_draw() const {
 
   if (st->rule50 > 99 && (!checkers() || MoveList<LEGAL>(*this).size()))
       return true;
+
+  return false;
+}
+
+
+/// Position::is_rep() tests whether the position is drawn by repetition.
+
+bool Position::is_rep() const {
 
   StateInfo* stp = st;
   for (int i = 2, e = std::min(st->rule50, st->pliesFromNull); i <= e; i += 2)
@@ -1051,7 +1059,6 @@ bool Position::is_draw() const {
 
   return false;
 }
-
 
 /// Position::flip() flips position with the white and black sides reversed. This
 /// is only useful for debugging e.g. for finding evaluation symmetry bugs.
