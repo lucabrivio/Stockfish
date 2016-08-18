@@ -938,6 +938,6 @@ void Eval::init() {
 
   for (int i = 0; i <= 40; ++i)
   {
-      KingTropism[i]= 160.0 / (1.0 + exp(3.8 - 0.5 * i));
+      KingTropism[i]= 70.0 / (1.0 + exp(3.0 - 0.7 * i));
   }
 }
