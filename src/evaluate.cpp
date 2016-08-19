@@ -474,7 +474,7 @@ namespace {
     if (DoTrace)
         Trace::add(KING, Us, score);
 
-    score = Score(std::min(int(PawnValueMg) * 3 / 2, score >> 16) << 16 | (score & 0x0000FFFF));
+    score = Score(std::min(int(PawnValueMg) * 5 / 4, score >> 16) << 16 | (score & 0x0000FFFF));
     return score;
   }
 
