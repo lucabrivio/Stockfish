@@ -722,10 +722,8 @@ namespace {
     // Compute the initiative bonus for the attacking side
     int initiative = 8 * (asymmetry + kingDistance - 15) + 12 * pawns;
 
-    // Now apply the bonus: note that we find the attacking side by extracting
-    // the sign of the endgame value, and that we carefully cap the bonus so
-    // that the endgame score will never be divided by more than two.
-    int value = ((eg > 0) - (eg < 0)) * std::max(initiative, -abs(eg / 2));
+    // Now apply the bonus with a fast sigmoid function of the endgame score
+    int value = initiative * eg / (2 + abs(eg));
 
     return make_score(0, value);
   }
