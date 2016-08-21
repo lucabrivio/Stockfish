@@ -221,6 +221,7 @@ namespace {
   const int BishopCheck       = 48;
   const int KnightCheck       = 78;
 
+  int ProbSquareDistance[SQUARE_NB][SQUARE_NB];
 
   // eval_init() initializes king and attack bitboards for a given color
   // adding pawn attacks. To be done at the beginning of the evaluation.
@@ -619,12 +620,12 @@ namespace {
             Square blockSq = s + pawn_push(Us);
 
             // Adjust bonus based on the king's proximity
-            ebonus +=  distance(pos.square<KING>(Them), blockSq) * 5 * rr
-                     - distance(pos.square<KING>(Us  ), blockSq) * 2 * rr;
+            ebonus +=  ProbSquareDistance[pos.square<KING>(Them)][blockSq] * 40 * rr / 256
+                     - ProbSquareDistance[pos.square<KING>(Us  )][blockSq] * 16 * rr / 256;
 
             // If blockSq is not the queening square then consider also a second push
             if (relative_rank(Us, blockSq) != RANK_8)
-                ebonus -= distance(pos.square<KING>(Us), blockSq + pawn_push(Us)) * rr;
+                ebonus -= ProbSquareDistance[pos.square<KING>(Us)][blockSq + pawn_push(Us)] * rr * 8 / 256;
 
             // If the pawn is free to advance, then increase the bonus
             if (pos.empty(blockSq))
@@ -933,4 +934,13 @@ void Eval::init() {
       t = std::min(Peak, std::min(i * i - 16, t + MaxSlope));
       KingDanger[i] = make_score(t * 268 / 7700, 0);
   }
+
+  for (Square s1 = SQ_A1; s1 <= SQ_H8; ++s1)
+      for (Square s2 = SQ_A1; s2 <= SQ_H8; ++s2)
+          if (s1 != s2)
+          {
+              ProbSquareDistance[s1][s2] =  36 * std::max(distance<File>(s1, s2), distance<Rank>(s1, s2))
+                                          -  8 * abs(distance<File>(s1, s2) - distance<Rank>(s1, s2));
+          }
+
 }
