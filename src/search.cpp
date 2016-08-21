@@ -592,9 +592,16 @@ namespace {
     if (!rootNode)
     {
         // Step 2. Check for aborted search and immediate draw
-        if (Signals.stop.load(std::memory_order_relaxed) || pos.is_rep() || pos.is_draw() || ss->ply >= MAX_PLY)
+        if (Signals.stop.load(std::memory_order_relaxed) || pos.is_draw() || ss->ply >= MAX_PLY)
             return ss->ply >= MAX_PLY && !inCheck ? evaluate(pos)
                                                   : DrawValue[pos.side_to_move()];
+
+        if (pos.is_rep())
+        {
+            Value ev = evaluate(pos);
+            return DrawValue[pos.side_to_move()] + (ev > 0) - (ev < 0);
+        }
+
 
         // Step 3. Mate distance pruning. Even if we mate at the next move our score
         // would be at best mate_in(ss->ply+1), but if alpha is already bigger because
@@ -1184,7 +1191,10 @@ moves_loop: // When in check search starts from here
                                               : DrawValue[pos.side_to_move()];
 
     if (pos.is_rep())
-        return DrawValue[pos.side_to_move()] + evaluate(pos) / 64;
+    {
+        Value ev = evaluate(pos);
+        return DrawValue[pos.side_to_move()] + (ev > 0) - (ev < 0);
+    }
 
 
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
