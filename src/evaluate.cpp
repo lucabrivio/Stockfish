@@ -223,6 +223,7 @@ namespace {
 
   int ProbSquareDistance[SQUARE_NB][SQUARE_NB];
 
+
   // eval_init() initializes king and attack bitboards for a given color
   // adding pawn attacks. To be done at the beginning of the evaluation.
 
