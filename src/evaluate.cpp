@@ -941,7 +941,7 @@ void Eval::init() {
           if (s1 != s2)
           {
               ProbSquareDistance[s1][s2] =  36 * std::max(distance<File>(s1, s2), distance<Rank>(s1, s2))
-                                          -  9 * abs(distance<File>(s1, s2) - distance<Rank>(s1, s2));
+                                          -  7 * abs(distance<File>(s1, s2) - distance<Rank>(s1, s2));
           }
 
 }
