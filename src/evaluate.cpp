@@ -846,8 +846,8 @@ Value Eval::evaluate(const Position& pos) {
           score -= Unstoppable * int(relative_rank(BLACK, frontmost_sq(BLACK, b)));
   }
 
-  // Evaluate space for both sides, only during opening
-  if (pos.non_pawn_material(WHITE) + pos.non_pawn_material(BLACK) >= 12222)
+  // Evaluate space for both sides
+  if (pos.non_pawn_material(WHITE) + pos.non_pawn_material(BLACK) >= RookValueMg + 3 * KnightValueMg)
       score +=  evaluate_space<WHITE>(pos, ei)
               - evaluate_space<BLACK>(pos, ei);
 
