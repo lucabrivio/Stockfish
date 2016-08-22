@@ -173,8 +173,8 @@ namespace {
   // Passed[mg/eg][Rank] contains midgame and endgame bonuses for passed pawns.
   // We don't use a Score because we process the two components independently.
   const Value Passed[][RANK_NB] = {
-    { V(5), V( 5), V(31), V(73), V(166), V(252) },
-    { V(7), V(14), V(38), V(73), V(166), V(252) }
+    { V(1280), V(1280), V(7936), V(18688), V(42496), V(64512) },
+    { V(1792), V(3584), V(9728), V(18688), V(42496), V(64512) }
   };
 
   // PassedFile[File] contains a bonus according to the file of a passed pawn
@@ -621,12 +621,12 @@ namespace {
             Square blockSq = s + pawn_push(Us);
 
             // Adjust bonus based on the king's proximity
-            ebonus +=  ProbSquareDistance[pos.square<KING>(Them)][blockSq] * 40 * rr / 256
-                     - ProbSquareDistance[pos.square<KING>(Us  )][blockSq] * 16 * rr / 256;
+            ebonus +=  ProbSquareDistance[pos.square<KING>(Them)][blockSq] * 40 * rr
+                     - ProbSquareDistance[pos.square<KING>(Us  )][blockSq] * 16 * rr;
 
             // If blockSq is not the queening square then consider also a second push
             if (relative_rank(Us, blockSq) != RANK_8)
-                ebonus -= ProbSquareDistance[pos.square<KING>(Us)][blockSq + pawn_push(Us)] * rr * 8 / 256;
+                ebonus -= ProbSquareDistance[pos.square<KING>(Us)][blockSq + pawn_push(Us)] * rr * 8;
 
             // If the pawn is free to advance, then increase the bonus
             if (pos.empty(blockSq))
@@ -646,23 +646,23 @@ namespace {
 
                 // If there aren't any enemy attacks, assign a big bonus. Otherwise
                 // assign a smaller bonus if the block square isn't attacked.
-                int k = !unsafeSquares ? 18 : !(unsafeSquares & blockSq) ? 8 : 0;
+                int k = !unsafeSquares ? 4608 : !(unsafeSquares & blockSq) ? 2048 : 0;
 
                 // If the path to the queen is fully defended, assign a big bonus.
                 // Otherwise assign a smaller bonus if the block square is defended.
                 if (defendedSquares == squaresToQueen)
-                    k += 6;
+                    k += 1536;
 
                 else if (defendedSquares & blockSq)
-                    k += 4;
+                    k += 1024;
 
                 mbonus += k * rr, ebonus += k * rr;
             }
             else if (pos.pieces(Us) & blockSq)
-                mbonus += rr + r * 2, ebonus += rr + r * 2;
+                mbonus += rr + r * 512, ebonus += rr + r * 512;
         } // rr != 0
 
-        score += make_score(mbonus, ebonus) + PassedFile[file_of(s)];
+        score += make_score(mbonus / 256, ebonus / 256) + PassedFile[file_of(s)];
     }
 
     if (DoTrace)
@@ -941,7 +941,7 @@ void Eval::init() {
           if (s1 != s2)
           {
               ProbSquareDistance[s1][s2] =  36 * std::max(distance<File>(s1, s2), distance<Rank>(s1, s2))
-                                          -  7 * abs(distance<File>(s1, s2) - distance<Rank>(s1, s2));
+                                          -  8 * abs(distance<File>(s1, s2) - distance<Rank>(s1, s2));
           }
 
 }
