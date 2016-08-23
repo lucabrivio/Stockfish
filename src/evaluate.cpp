@@ -671,45 +671,6 @@ namespace {
   }
 
 
-  // evaluate_space() computes the space evaluation for a given side. The
-  // space evaluation is a simple bonus based on the number of safe squares
-  // available for minor pieces on the central four files on ranks 2--4. Safe
-  // squares one, two or three squares behind a friendly pawn are counted
-  // twice. Finally, the space bonus is multiplied by a weight. The aim is to
-  // improve play on game opening.
-  template<Color Us>
-  Score evaluate_space(const Position& pos, const EvalInfo& ei) {
-
-    const Color Them = (Us == WHITE ? BLACK : WHITE);
-    const Bitboard SpaceMask =
-      Us == WHITE ? (FileCBB | FileDBB | FileEBB | FileFBB) & (Rank2BB | Rank3BB | Rank4BB)
-                  : (FileCBB | FileDBB | FileEBB | FileFBB) & (Rank7BB | Rank6BB | Rank5BB);
-
-    // Find the safe squares for our pieces inside the area defined by
-    // SpaceMask. A square is unsafe if it is attacked by an enemy
-    // pawn, or if it is undefended and attacked by an enemy piece.
-    Bitboard safe =   SpaceMask
-                   & ~pos.pieces(Us, PAWN)
-                   & ~ei.attackedBy[Them][PAWN]
-                   & (ei.attackedBy[Us][ALL_PIECES] | ~ei.attackedBy[Them][ALL_PIECES]);
-
-    // Find all squares which are at most three squares behind some friendly pawn
-    Bitboard behind = pos.pieces(Us, PAWN);
-    behind |= (Us == WHITE ? behind >>  8 : behind <<  8);
-    behind |= (Us == WHITE ? behind >> 16 : behind << 16);
-
-    // Since SpaceMask[Us] is fully on our half of the board...
-    assert(unsigned(safe >> (Us == WHITE ? 32 : 0)) == 0);
-
-    // ...count safe + (behind & safe) with a single popcount
-    int bonus = popcount((Us == WHITE ? safe << 32 : safe >> 32) | (behind & safe));
-    bonus = std::min(16, bonus);
-    int weight = pos.count<ALL_PIECES>(Us);
-
-    return make_score(bonus * weight * weight / 22, 0);
-  }
-
-
   // evaluate_initiative() computes the initiative correction value for the
   // position, i.e., second order bonus/malus based on the known attacking/defending
   // status of the players.
@@ -846,11 +807,6 @@ Value Eval::evaluate(const Position& pos) {
           score -= Unstoppable * int(relative_rank(BLACK, frontmost_sq(BLACK, b)));
   }
 
-  // Evaluate space for both sides, only during opening
-  if (pos.non_pawn_material(WHITE) + pos.non_pawn_material(BLACK) >= 12222)
-      score +=  evaluate_space<WHITE>(pos, ei)
-              - evaluate_space<BLACK>(pos, ei);
-
   // Evaluate position potential for the winning side
   score += evaluate_initiative(pos, ei.pi->pawn_asymmetry(), eg_value(score));
 
@@ -870,8 +826,6 @@ Value Eval::evaluate(const Position& pos) {
       Trace::add(IMBALANCE, ei.me->imbalance());
       Trace::add(PAWN, ei.pi->pawns_score());
       Trace::add(MOBILITY, mobility[WHITE], mobility[BLACK]);
-      Trace::add(SPACE, evaluate_space<WHITE>(pos, ei)
-                      , evaluate_space<BLACK>(pos, ei));
       Trace::add(TOTAL, score);
   }
 
@@ -910,7 +864,6 @@ std::string Eval::trace(const Position& pos) {
      << "    King safety | " << Term(KING)
      << "        Threats | " << Term(THREAT)
      << "   Passed pawns | " << Term(PASSED)
-     << "          Space | " << Term(SPACE)
      << "----------------+-------------+-------------+-------------\n"
      << "          Total | " << Term(TOTAL);
 
