@@ -847,7 +847,7 @@ Value Eval::evaluate(const Position& pos) {
   }
 
   // Evaluate space for both sides
-  if (pos.non_pawn_material(WHITE) + pos.non_pawn_material(BLACK) >= RookValueMg + 3 * KnightValueMg)
+  if (pos.non_pawn_material(WHITE) + pos.non_pawn_material(BLACK) >= 2 * RookValueMg + 2 * BishopValueMg + 4 * KnightValueMg)
       score +=  evaluate_space<WHITE>(pos, ei)
               - evaluate_space<BLACK>(pos, ei);
 
