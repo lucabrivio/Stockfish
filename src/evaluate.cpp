@@ -747,8 +747,8 @@ namespace {
             if (!pos.pieces(ROOK) && !pos.pieces(QUEEN))
             {
                 sf =  ScaleFactor(   42
-                                  - ( 6 + 27 * (pos.non_pawn_material(WHITE) == BishopValueMg && pos.non_pawn_material(BLACK) == BishopValueMg))
-                                  / ( 1 +  2 * more_than_one(pos.pieces(PAWN))));
+                                  - ( 2 +  9 * (pos.non_pawn_material(WHITE) == BishopValueMg && pos.non_pawn_material(BLACK) == BishopValueMg))
+                                  * ( 1 +  2 * !more_than_one(pos.pieces(PAWN))));
             }
 
             else
