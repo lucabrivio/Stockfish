@@ -73,6 +73,7 @@ struct Entry {
   int castlingRights[COLOR_NB];
   int semiopenFiles[COLOR_NB];
   int pawnsOnSquares[COLOR_NB][COLOR_NB]; // [color][light/dark squares]
+  int openness;
   int asymmetry;
 };
 
