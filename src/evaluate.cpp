@@ -513,7 +513,7 @@ namespace {
                              & ~(ei.attackedBy[Us][ALL_PIECES] | ei.attackedBy[Them][ALL_PIECES]))
                          | (ei.pi->weak_pawns(Them) & ei.attackedBy2[Us]);
     int weaknesses = popcount(weaknessesBB);
-    score += make_score(0, 100 * weaknesses / (4 + weaknesses));
+    score += make_score(0, 64 * weaknesses / (2 + weaknesses));
 
     // Non-pawn enemies attacked by a pawn
     weak = (pos.pieces(Them) ^ pos.pieces(Them, PAWN)) & ei.attackedBy[Us][PAWN];
