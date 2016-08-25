@@ -191,7 +191,6 @@ namespace {
   const Score SafeCheck           = S(20, 20);
   const Score OtherCheck          = S(10, 10);
   const Score ThreatByHangingPawn = S(71, 61);
-  const Score WeakEnemy           = S( 0, 12);
   const Score WeakQueen           = S(35,  0);
   const Score Hanging             = S(48, 27);
   const Score ThreatByPawnPush    = S(38, 22);
@@ -510,10 +509,11 @@ namespace {
     Score score = SCORE_ZERO;
 
     // Small bonus for opponent's loose pawns or pieces or weak pawns
-    Bitboard weaknesses = ((pos.pieces(Them) ^ pos.pieces(Them, QUEEN, KING))
+    Bitboard weaknessesBB = ((pos.pieces(Them) ^ pos.pieces(Them, QUEEN, KING))
                              & ~(ei.attackedBy[Us][ALL_PIECES] | ei.attackedBy[Them][ALL_PIECES]))
                          | (ei.pi->weak_pawns(Them) & ei.attackedBy2[Us]);
-    score += WeakEnemy * popcount(weaknesses);
+    int weaknesses = popcount(weaknessesBB);
+    score += make_score(0, 100 * weaknesses / (4 + weaknesses));
 
     // Non-pawn enemies attacked by a pawn
     weak = (pos.pieces(Them) ^ pos.pieces(Them, PAWN)) & ei.attackedBy[Us][PAWN];
