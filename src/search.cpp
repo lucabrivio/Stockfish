@@ -377,7 +377,12 @@ void Thread::search() {
       {
           const Row& row = HalfDensity[(idx - 1) % HalfDensitySize];
           if (row[(rootDepth + rootPos.game_ply()) % row.size()])
-             continue;
+              continue;
+          bool HigherThreadSearching = false;
+          for (Thread* th : Threads)
+              HigherThreadSearching |= (th > this) && (th->rootDepth == rootDepth);
+          if (HigherThreadSearching)
+              continue;
       }
 
       // Age out PV variability metric
