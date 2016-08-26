@@ -380,7 +380,7 @@ void Thread::search() {
               continue;
           bool HigherThreadSearching = false;
           for (Thread* th : Threads)
-              HigherThreadSearching |= (th > this) && (th->rootDepth == rootDepth);
+              HigherThreadSearching |= (th->idx > idx) && (th->rootDepth == rootDepth);
           if (HigherThreadSearching)
               continue;
       }
