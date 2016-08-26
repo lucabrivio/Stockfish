@@ -484,14 +484,16 @@ namespace {
   const Bitboard WhiteCamp = Rank4BB | Rank5BB | Rank6BB | Rank7BB | Rank8BB;
   const Bitboard BlackCamp = Rank5BB | Rank4BB | Rank3BB | Rank2BB | Rank1BB;
   const Bitboard QueenSide   = FileABB | FileBBB | FileCBB | FileDBB;
+  const Bitboard QCenterSide = FileBBB | FileCBB | FileDBB | FileEBB;
   const Bitboard CenterFiles = FileCBB | FileDBB | FileEBB | FileFBB;
+  const Bitboard KCenterSide = FileDBB | FileEBB | FileFBB | FileGBB;
   const Bitboard KingSide    = FileEBB | FileFBB | FileGBB | FileHBB;
 
   const Bitboard KingFlank[COLOR_NB][FILE_NB] = {
-    { QueenSide   & WhiteCamp, QueenSide & WhiteCamp, QueenSide & WhiteCamp, CenterFiles & WhiteCamp,
-      CenterFiles & WhiteCamp, KingSide  & WhiteCamp, KingSide  & WhiteCamp, KingSide    & WhiteCamp },
-    { QueenSide   & BlackCamp, QueenSide & BlackCamp, QueenSide & BlackCamp, CenterFiles & BlackCamp,
-      CenterFiles & BlackCamp, KingSide  & BlackCamp, KingSide  & BlackCamp, KingSide    & BlackCamp },
+    { QueenSide   & WhiteCamp, QueenSide   & WhiteCamp, QCenterSide & WhiteCamp, CenterFiles & WhiteCamp,
+      CenterFiles & WhiteCamp, KCenterSide & WhiteCamp, KingSide    & WhiteCamp, KingSide    & WhiteCamp },
+    { QueenSide   & BlackCamp, QueenSide   & BlackCamp, QCenterSide & BlackCamp, CenterFiles & BlackCamp,
+      CenterFiles & BlackCamp, KCenterSide & BlackCamp, KingSide    & BlackCamp, KingSide    & BlackCamp },
   };
 
   template<Color Us, bool DoTrace>
