@@ -318,7 +318,7 @@ void Position::set_check_info(CheckInfo* ci) const {
 void Position::set_state(StateInfo* si) const {
 
   si->key = si->pawnKey = si->materialKey = 0;
-  si->nonPawnMaterial[WHITE] = si->nonPawnMaterial[BLACK] = VALUE_ZERO;
+  si->totalMaterial[WHITE] = si->totalMaterial[BLACK] = si->nonPawnMaterial[WHITE] = si->nonPawnMaterial[BLACK] = VALUE_ZERO;
   si->psq = SCORE_ZERO;
   si->checkersBB = attackers_to(square<KING>(sideToMove)) & pieces(~sideToMove);
 
@@ -348,8 +348,11 @@ void Position::set_state(StateInfo* si) const {
 
   for (Color c = WHITE; c <= BLACK; ++c)
       for (PieceType pt = PAWN; pt <= KING; ++pt)
+      {
+          si->totalMaterial[c] += pieceCount[c][pt] * PieceValue[MG][pt];
           for (int cnt = 0; cnt < pieceCount[c][pt]; ++cnt)
               si->materialKey ^= Zobrist::psq[c][pt][cnt];
+      }
 
   for (Color c = WHITE; c <= BLACK; ++c)
       for (PieceType pt = KNIGHT; pt <= QUEEN; ++pt)
@@ -412,11 +415,11 @@ const string Position::fen() const {
 
 Phase Position::game_phase() const {
 
-  Value npm = st->nonPawnMaterial[WHITE] + st->nonPawnMaterial[BLACK];
+  Value mat = st->nonPawnMaterial[WHITE] + st->nonPawnMaterial[BLACK];
 
-  npm = std::max(EndgameLimit, std::min(npm, MidgameLimit));
+  mat = std::max(EndgameLimit, std::min(mat, MidgameLimit));
 
-  return Phase(((npm - EndgameLimit) * PHASE_MIDGAME) / (MidgameLimit - EndgameLimit));
+  return Phase(((mat - EndgameLimit) * PHASE_MIDGAME) / (MidgameLimit - EndgameLimit));
 }
 
 
@@ -683,6 +686,8 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
   if (captured)
   {
       Square capsq = to;
+      
+      st->totalMaterial[them] -= PieceValue[MG][captured];
 
       // If the captured piece is a pawn, update pawn hash key, otherwise
       // update non-pawn material.
@@ -774,6 +779,7 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
           st->psq += PSQT::psq[us][promotion][to] - PSQT::psq[us][PAWN][to];
 
           // Update material
+          st->totalMaterial[us] += PieceValue[MG][promotion] - PieceValue[MG][PAWN];
           st->nonPawnMaterial[us] += PieceValue[MG][promotion];
       }
 

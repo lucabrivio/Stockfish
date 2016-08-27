@@ -61,6 +61,7 @@ struct StateInfo {
   // Copied when making a move
   Key    pawnKey;
   Key    materialKey;
+  Value  totalMaterial[COLOR_NB];
   Value  nonPawnMaterial[COLOR_NB];
   int    castlingRights;
   int    rule50;
@@ -174,6 +175,7 @@ public:
   bool is_draw() const;
   int rule50_count() const;
   Score psq_score() const;
+  Value total_material(Color c) const;
   Value non_pawn_material(Color c) const;
 
   // Position consistency check, for debugging
@@ -345,6 +347,10 @@ inline Key Position::material_key() const {
 
 inline Score Position::psq_score() const {
   return st->psq;
+}
+
+inline Value Position::total_material(Color c) const {
+  return st->totalMaterial[c];
 }
 
 inline Value Position::non_pawn_material(Color c) const {
