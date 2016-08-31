@@ -193,7 +193,7 @@ namespace {
   const Score OtherCheck          = S(10, 10);
   const Score ThreatByHangingPawn = S(71, 61);
   const Score LooseEnemies        = S( 0, 25);
-  const Score PinnedBlockingPawns = S(16, 48);
+  const Score PinnedBlockingPawns = S( 8, 32);
   const Score WeakQueen           = S(35,  0);
   const Score Hanging             = S(48, 27);
   const Score ThreatByPawnPush    = S(38, 22);
@@ -425,9 +425,9 @@ namespace {
         // attacked and undefended squares around our king and the quality of
         // the pawn shelter (current 'score' value).
         attackUnits =  std::min(72, ei.kingAttackersCount[Them] * ei.kingAttackersWeight[Them])
-                     +  9 * ei.kingAdjacentZoneAttacksCount[Them]
+                     +  9 * (ei.kingAdjacentZoneAttacksCount[Them] + !!ei.pinnedPieces[Us])
                      + 21 * popcount(undefended)
-                     + 12 * (popcount(b) + !!ei.pinnedPieces[Us])
+                     + 12 * popcount(b)
                      - 64 * !pos.count<QUEEN>(Them)
                      - mg_value(score) / 8;
 
