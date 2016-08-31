@@ -342,7 +342,7 @@ namespace {
                 score += RookOnPawn * popcount(pos.pieces(Them, PAWN) & PseudoAttacks[ROOK][s]);
 
             // Bonus when on an open or semi-open file
-            if (ei.pi->semiopen_file(Us, file_of(s)))
+            if (!(forward_bb(Us, s) & pos.pieces(Us, PAWN)))
                 score += RookOnFile[!!ei.pi->semiopen_file(Them, file_of(s))];
 
             // Penalize when trapped by the king, even more if the king cannot castle
