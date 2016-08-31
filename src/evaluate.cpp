@@ -149,9 +149,12 @@ namespace {
     { S( 8, 0), S(14, 4) }  // Bishops
   };
 
-  // RookOnFile[semiopen/open] contains bonuses for each rook when there is no
+  // RookOnFile[semiopen/open][file] contains bonuses for each rook when there is no
   // friendly pawn on the rook file.
-  const Score RookOnFile[2] = { S(20, 7), S(45, 20) };
+  const Score RookOnFile[2][FILE_NB] = {
+    { S(15, 10), S(15,  7), S(30, 12), S(40,  9), S(40,  9), S(30, 12), S(15,  7), S(15, 10)},
+    { S(50, 20), S(40, 27), S(45, 25), S(45, 20), S(45, 20), S(45, 25), S(40, 27), S(50, 20)}
+  };
 
   // ThreatBySafePawn[PieceType] contains bonuses according to which piece
   // type is attacked by a pawn which is protected or is not attacked.
@@ -343,7 +346,7 @@ namespace {
 
             // Bonus when on an open or semi-open file
             if (ei.pi->semiopen_file(Us, file_of(s)))
-                score += RookOnFile[!!ei.pi->semiopen_file(Them, file_of(s))];
+                score += RookOnFile[!!ei.pi->semiopen_file(Them, file_of(s))][file_of(s)];
 
             // Penalize when trapped by the king, even more if the king cannot castle
             else if (mob <= 3)
