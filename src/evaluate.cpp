@@ -837,25 +837,28 @@ Value Eval::evaluate(const Position& pos) {
   score +=  evaluate_passed_pawns<WHITE, DoTrace>(pos, ei)
           - evaluate_passed_pawns<BLACK, DoTrace>(pos, ei);
 
-  // If both sides have only pawns, score for potential unstoppable pawns
-  if (!pos.non_pawn_material(WHITE) && !pos.non_pawn_material(BLACK))
-  {
-      Bitboard b;
-      if ((b = ei.pi->passed_pawns(WHITE)) != 0)
-          score += Unstoppable * int(relative_rank(WHITE, frontmost_sq(WHITE, b)));
-
-      if ((b = ei.pi->passed_pawns(BLACK)) != 0)
-          score -= Unstoppable * int(relative_rank(BLACK, frontmost_sq(BLACK, b)));
-  }
-
-  // Evaluate space for both sides, only during opening
-  if (pos.non_pawn_material(WHITE) + pos.non_pawn_material(BLACK) >= 12222)
-      score +=  evaluate_space<WHITE>(pos, ei)
-              - evaluate_space<BLACK>(pos, ei);
-
-  // Evaluate position potential for the winning side
   if (pos.pieces(PAWN))
-      score += evaluate_initiative(pos, ei.pi->pawn_asymmetry(), eg_value(score));
+  {
+
+  // If both sides have only pawns, score for potential unstoppable pawns
+    if (!pos.non_pawn_material(WHITE) && !pos.non_pawn_material(BLACK))
+    {
+        Bitboard b;
+        if ((b = ei.pi->passed_pawns(WHITE)) != 0)
+            score += Unstoppable * int(relative_rank(WHITE, frontmost_sq(WHITE, b)));
+
+        if ((b = ei.pi->passed_pawns(BLACK)) != 0)
+            score -= Unstoppable * int(relative_rank(BLACK, frontmost_sq(BLACK, b)));
+    }
+
+    // Evaluate space for both sides, only during opening
+    if (pos.non_pawn_material(WHITE) + pos.non_pawn_material(BLACK) >= 12222)
+        score +=  evaluate_space<WHITE>(pos, ei)
+                - evaluate_space<BLACK>(pos, ei);
+
+    // Evaluate position potential for the winning side
+        score += evaluate_initiative(pos, ei.pi->pawn_asymmetry(), eg_value(score));
+  }
 
   // Evaluate scale factor for the winning side
   ScaleFactor sf = evaluate_scale_factor(pos, ei, eg_value(score));
