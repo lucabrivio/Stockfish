@@ -103,7 +103,7 @@ namespace {
     Bitboard ourPawns   = pos.pieces(Us  , PAWN);
     Bitboard theirPawns = pos.pieces(Them, PAWN);
 
-    e->passedPawns[Us] = e->pawnAttacksSpan[Us] = 0;
+    e->passedPawns[Us] = e->pawnAttacksSpan[Us] = e->kingDistance = 0;
     e->kingSquares[Us] = SQ_NONE;
     e->semiopenFiles[Us] = 0xFF;
     e->pawnAttacks[Us] = shift_bb<Right>(ourPawns) | shift_bb<Left>(ourPawns);
@@ -175,6 +175,20 @@ namespace {
     return score;
   }
 
+  int do_initiative(const Position& pos, Pawns::Entry* e)
+  {
+    // Compute the initiative bonus for the attacking side   
+    const Bitboard QueenSide = FileABB | FileBBB | FileCBB | FileDBB;
+    int wQP = popcount(pos.pieces(WHITE, PAWN) & QueenSide);
+    int bQP = popcount(pos.pieces(BLACK, PAWN) & QueenSide);
+    int wKP = pos.count<PAWN>(WHITE) - wQP;
+    int bKP = pos.count<PAWN>(BLACK) - bQP;
+    int imbalance = std::max(abs(wQP - bQP), abs(wKP - bKP));
+    int pawns = pos.count<PAWN>(WHITE) + pos.count<PAWN>(BLACK);
+    return 8 * popcount(e->semiopenFiles[WHITE] ^ e->semiopenFiles[BLACK])
+             + 12 * pawns + 6 * imbalance - 125;
+  }
+
 } // namespace
 
 namespace Pawns {
@@ -214,14 +228,7 @@ Entry* probe(const Position& pos) {
 
   e->key = key;
   e->score = evaluate<WHITE>(pos, e) - evaluate<BLACK>(pos, e);
-  e->asymmetry = popcount(e->semiopenFiles[WHITE] ^ e->semiopenFiles[BLACK]);
-
-  const Bitboard QueenSide = FileABB | FileBBB | FileCBB | FileDBB;
-  int wQP = popcount(pos.pieces(WHITE, PAWN) & QueenSide);
-  int bQP = popcount(pos.pieces(BLACK, PAWN) & QueenSide);
-  int wKP = pos.count<PAWN>(WHITE) - wQP;
-  int bKP = pos.count<PAWN>(BLACK) - bQP;
-  e->kqImbalance = std::max(abs(wQP - bQP), abs(wKP - bKP));
+  e->initiative = do_initiative(pos, e);
 
   return e;
 }
@@ -285,6 +292,9 @@ Score Entry::do_king_safety(const Position& pos, Square ksq) {
 
   if (pos.can_castle(MakeCastling<Us, QUEEN_SIDE>::right))
       bonus = std::max(bonus, shelter_storm<Us>(pos, relative_square(Us, SQ_C1)));
+
+  kingDistance = 8 * (  distance<File>(kingSquares[Us], kingSquares[~Us])
+                      - distance<Rank>(kingSquares[Us], kingSquares[~Us]));
 
   return make_score(bonus, -16 * minKingPawnDistance);
 }
