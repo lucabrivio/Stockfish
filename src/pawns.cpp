@@ -230,6 +230,7 @@ Entry* probe(const Position& pos) {
   e->score = evaluate<WHITE>(pos, e) - evaluate<BLACK>(pos, e);
   e->initiative = do_initiative(pos, e);
 
+  e->openFiles = popcount(e->semiopenFiles[WHITE] & e->semiopenFiles[BLACK]);
   return e;
 }
 
