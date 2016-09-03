@@ -153,6 +153,8 @@ namespace {
   // friendly pawn on the rook file.
   const Score RookOnFile[2] = { S(20, 7), S(45, 20) };
 
+  const Score OpenFiles[3] = { S(0, 0), S(8, 3), S(12, 6)};
+
   // ThreatBySafePawn[PieceType] contains bonuses according to which piece
   // type is attacked by a pawn which is protected or is not attacked.
   const Score ThreatBySafePawn[PIECE_TYPE_NB] = {
@@ -355,6 +357,9 @@ namespace {
                     && !ei.pi->semiopen_side(Us, file_of(ksq), file_of(s) < file_of(ksq)))
                     score -= (TrappedRook - make_score(mob * 22, 0)) * (1 + !pos.can_castle(Us));
             }
+
+            else
+                score += OpenFiles[std::min(ei.pi->open_files(), 2)];
         }
 
         if (Pt == QUEEN)
