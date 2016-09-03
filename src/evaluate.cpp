@@ -151,9 +151,9 @@ namespace {
 
   // RookOnFile[semiopen/open] contains bonuses for each rook when there is no
   // friendly pawn on the rook file.
-  const Score RookOnFile[2] = { S(20, 7), S(45, 20) };
+  const Score RookOnFile[2] = { S(22, 7), S(47, 20) };
 
-  const Score OpenFiles[3] = { S(0, 0), S(8, 3), S(12, 6)};
+  const Score SemiopenFiles[3] = { S(0, 0), S(9, 4), S(13, 4)};
 
   // ThreatBySafePawn[PieceType] contains bonuses according to which piece
   // type is attacked by a pawn which is protected or is not attacked.
@@ -359,7 +359,7 @@ namespace {
             }
 
             else
-                score += OpenFiles[std::min(ei.pi->open_files(), 2)];
+                score += SemiopenFiles[!!ei.pi->semiopen_files(Us) + more_than_one(ei.pi->semiopen_files(Us))];
         }
 
         if (Pt == QUEEN)
