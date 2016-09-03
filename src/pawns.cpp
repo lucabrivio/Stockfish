@@ -177,16 +177,10 @@ namespace {
 
   int do_initiative(const Position& pos, Pawns::Entry* e)
   {
-    // Compute the initiative bonus for the attacking side   
-    const Bitboard QueenSide = FileABB | FileBBB | FileCBB | FileDBB;
-    int wQP = popcount(pos.pieces(WHITE, PAWN) & QueenSide);
-    int bQP = popcount(pos.pieces(BLACK, PAWN) & QueenSide);
-    int wKP = pos.count<PAWN>(WHITE) - wQP;
-    int bKP = pos.count<PAWN>(BLACK) - bQP;
-    int imbalance = std::max(abs(wQP - bQP), abs(wKP - bKP));
+    // Compute the initiative bonus for the attacking side
     int pawns = pos.count<PAWN>(WHITE) + pos.count<PAWN>(BLACK);
-    return 8 * popcount(e->semiopenFiles[WHITE] ^ e->semiopenFiles[BLACK])
-             + 12 * pawns + 6 * imbalance - 125;
+    return    8 * popcount(e->semiopenFiles[WHITE] ^ e->semiopenFiles[BLACK])
+           + 12 * pawns - 120;
   }
 
 } // namespace
@@ -229,7 +223,6 @@ Entry* probe(const Position& pos) {
   e->key = key;
   e->score = evaluate<WHITE>(pos, e) - evaluate<BLACK>(pos, e);
   e->initiative = do_initiative(pos, e);
-
   e->openFiles = popcount(e->semiopenFiles[WHITE] & e->semiopenFiles[BLACK]);
   return e;
 }
