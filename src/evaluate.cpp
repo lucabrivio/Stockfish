@@ -194,6 +194,7 @@ namespace {
   const Score ThreatByHangingPawn = S(71, 61);
   const Score LooseEnemies        = S( 0, 25);
   const Score WeakQueen           = S(35,  0);
+  const Score IslandBonus         = S( 2,  4);
   const Score Hanging             = S(48, 27);
   const Score ThreatByPawnPush    = S(38, 22);
   const Score Unstoppable         = S( 0, 20);
@@ -260,6 +261,8 @@ namespace {
     Bitboard b, bb;
     Square s;
     Score score = SCORE_ZERO;
+
+    int islands = ei.pi->pawn_islands(WHITE) + ei.pi->pawn_islands(BLACK);
 
     const PieceType NextPt = (Us == WHITE ? Pt : PieceType(Pt + 1));
     const Color Them = (Us == WHITE ? BLACK : WHITE);
@@ -363,6 +366,9 @@ namespace {
             if (pos.slider_blockers(pos.pieces(Them, ROOK, BISHOP), s))
                 score -= WeakQueen;
         }
+
+        if (Pt == BISHOP || Pt == ROOK || Pt == QUEEN)
+            score += IslandBonus * islands;
     }
 
     if (DoTrace)
