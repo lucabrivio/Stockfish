@@ -130,8 +130,6 @@ namespace {
         supported  = neighbours & rank_bb(s - Up);
         connected  = supported | phalanx;
 
-        e->pawnIslands[Us] += !(ourPawns & (forward_bb(Us, s) | file_bb(f + File(1))));
-
         // A pawn is backward when it is behind all pawns of the same color on the
         // adjacent files and cannot be safely advanced.
         if (!neighbours || lever || relative_rank(Us, s) >= RANK_5)
@@ -173,6 +171,9 @@ namespace {
         if (lever)
             score += Lever[relative_rank(Us, s)];
     }
+
+    b = e->semiopenFiles[Us];
+    e->pawnIslands[Us] = popcount(b & ~(b >> 1));
 
     return score;
   }
