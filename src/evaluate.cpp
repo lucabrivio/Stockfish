@@ -194,7 +194,8 @@ namespace {
   const Score ThreatByHangingPawn = S(71, 61);
   const Score LooseEnemies        = S( 0, 25);
   const Score WeakQueen           = S(35,  0);
-  const Score QueenIslands        = S(10, 25);
+  const Score QueenIslands        = S(12, 25);
+  const Score RookIslands         = S( 0, 18);
   const Score Hanging             = S(48, 27);
   const Score ThreatByPawnPush    = S(38, 22);
   const Score Unstoppable         = S( 0, 20);
@@ -356,6 +357,7 @@ namespace {
                     && !ei.pi->semiopen_side(Us, file_of(ksq), file_of(s) < file_of(ksq)))
                     score -= (TrappedRook - make_score(mob * 22, 0)) * (1 + !pos.can_castle(Us));
             }
+            score += RookIslands * ei.pi->pawn_islands(Them);
         }
 
         if (Pt == QUEEN)
