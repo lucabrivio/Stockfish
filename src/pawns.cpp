@@ -172,7 +172,7 @@ namespace {
             score += Lever[relative_rank(Us, s)];
     }
 
-    b = e->semiopenFiles[Us];
+    b = e->semiopenFiles[Us] ^ 0xFF;
     e->pawnIslands[Us] = popcount(b & ~(b >> 1));
 
     return score;
