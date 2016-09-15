@@ -560,7 +560,7 @@ namespace {
     TTEntry* tte;
     Key posKey;
     Move ttMove, move, excludedMove, bestMove;
-    Depth extension, newDepth, predictedDepth;
+    Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, nullValue;
     bool ttHit, inCheck, givesCheck, singularExtensionNode, improving;
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning;
@@ -650,7 +650,7 @@ namespace {
             }
 
             // Extra penalty for a quiet TT move in previous ply when it gets refuted
-            if ((ss-1)->moveCount == 1 && !pos.captured_piece_type())
+            if ((ss-1)->moveCount == 1 && !pos.captured_piece())
             {
                 Value penalty = Value(d * d + 4 * d + 1);
                 Square prevSq = to_sq((ss-1)->currentMove);
@@ -920,41 +920,41 @@ moves_loop: // When in check search starts from here
       newDepth = depth - ONE_PLY + extension;
 
       // Step 13. Pruning at shallow depth
-      if (   !rootNode
-          && !captureOrPromotion
-          && !inCheck
-          && !givesCheck
-          &&  bestValue > VALUE_MATED_IN_MAX_PLY
-          && !pos.advanced_pawn_push(move))
+      if (  !rootNode
+         && !inCheck
+         &&  bestValue > VALUE_MATED_IN_MAX_PLY)
       {
-          // Move count based pruning
-          if (moveCountPruning)
-              continue;
-
-          predictedDepth = std::max(newDepth - reduction<PvNode>(improving, depth, moveCount), DEPTH_ZERO);
-
-          // Countermoves based pruning
-          if (   predictedDepth < 3 * ONE_PLY
-              && (!cmh  || (*cmh )[moved_piece][to_sq(move)] < VALUE_ZERO)
-              && (!fmh  || (*fmh )[moved_piece][to_sq(move)] < VALUE_ZERO)
-              && (!fmh2 || (*fmh2)[moved_piece][to_sq(move)] < VALUE_ZERO || (cmh && fmh)))
-              continue;
-
-          // Futility pruning: parent node
-          if (   predictedDepth < 7 * ONE_PLY
-              && ss->staticEval + 256 + 200 * predictedDepth / ONE_PLY <= alpha)
-              continue;
-
-          // Prune moves with negative SEE at low depths and below a decreasing
-          // threshold at higher depths.
-          if (predictedDepth < 8 * ONE_PLY)
+          if (   !captureOrPromotion
+              && !givesCheck
+              && !pos.advanced_pawn_push(move))
           {
-              Value see_v = predictedDepth < 4 * ONE_PLY ? VALUE_ZERO
-                            : -PawnValueMg * 2 * int(predictedDepth - 3 * ONE_PLY) / ONE_PLY;
+              // Move count based pruning
+              if (moveCountPruning)
+                  continue;
 
-              if (pos.see_sign(move) < see_v)
+              // Reduced depth of the next LMR search
+              int lmrDepth = std::max(newDepth - reduction<PvNode>(improving, depth, moveCount), DEPTH_ZERO) / ONE_PLY;
+
+              // Countermoves based pruning
+              if (   lmrDepth < 3
+                  && (!cmh  || (*cmh )[moved_piece][to_sq(move)] < VALUE_ZERO)
+                  && (!fmh  || (*fmh )[moved_piece][to_sq(move)] < VALUE_ZERO)
+                  && (!fmh2 || (*fmh2)[moved_piece][to_sq(move)] < VALUE_ZERO || (cmh && fmh)))
+                  continue;
+
+              // Futility pruning: parent node
+              if (   lmrDepth < 7
+                  && ss->staticEval + 256 + 200 * lmrDepth <= alpha)
+                  continue;
+
+              // Prune moves with negative SEE
+              if (   lmrDepth < 8
+                  && pos.see_sign(move) < Value(-35 * lmrDepth * lmrDepth))
                   continue;
           }
+          else if (   depth < 7 * ONE_PLY
+                   && pos.see_sign(move) < Value(-35 * depth / ONE_PLY * depth / ONE_PLY))
+                  continue;
       }
 
       // Speculative prefetch as early as possible
@@ -1138,7 +1138,7 @@ moves_loop: // When in check search starts from here
         }
 
         // Extra penalty for a quiet TT move in previous ply when it gets refuted
-        if ((ss-1)->moveCount == 1 && !pos.captured_piece_type())
+        if ((ss-1)->moveCount == 1 && !pos.captured_piece())
         {
             Value penalty = Value(d * d + 4 * d + 1);
             Square prevSq = to_sq((ss-1)->currentMove);
@@ -1147,7 +1147,7 @@ moves_loop: // When in check search starts from here
     }
     // Bonus for prior countermove that caused the fail low
     else if (    depth >= 3 * ONE_PLY
-             && !pos.captured_piece_type()
+             && !pos.captured_piece()
              && is_ok((ss-1)->currentMove))
     {
         int d = depth / ONE_PLY;
