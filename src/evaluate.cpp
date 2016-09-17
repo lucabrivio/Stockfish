@@ -196,6 +196,7 @@ namespace {
   const Score WeakQueen           = S(35,  0);
   const Score Hanging             = S(48, 27);
   const Score ThreatByPawnPush    = S(38, 22);
+  const Score BishopPhalanx       = S(15,  0);
   const Score Unstoppable         = S( 0, 20);
 
   // Penalty for a bishop on a1/h1 (a8/h8 for black) which is trapped by
@@ -579,6 +580,14 @@ namespace {
        & ~ei.attackedBy[Us][PAWN];
 
     score += ThreatByPawnPush * popcount(b);
+
+    // Bonus if our bishops attack several adjacent squares
+    if (pos.count<BISHOP>(Us) >= 2)
+    {
+        b = ei.attackedBy[Us][BISHOP];
+        if (more_than_one(b & (shift_bb<DELTA_N>(b) | shift_bb<DELTA_E>(b))))
+            score += BishopPhalanx;
+    }
 
     if (DoTrace)
         Trace::add(THREAT, Us, score);
