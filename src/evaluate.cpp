@@ -701,7 +701,7 @@ namespace {
     // ...count safe + (behind & safe) with a single popcount
     int bonus = popcount((Us == WHITE ? safe << 32 : safe >> 32) | (behind & safe));
     bonus = std::min(16, bonus);
-    int weight = pos.count<ALL_PIECES>(Us) - ei.pi->file_openness();
+    int weight = pos.count<ALL_PIECES>(Us) - ei.pi->file_openness() + 2;
 
     return make_score(bonus * weight * weight / 18, 0);
   }
