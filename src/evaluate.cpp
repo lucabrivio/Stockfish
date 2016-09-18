@@ -703,7 +703,7 @@ namespace {
     bonus = std::min(16, bonus);
     int weight = pos.count<ALL_PIECES>(Us) - 2 * ei.pi->file_openness();
 
-    return make_score(bonus * weight * weight / 18, 0);
+    return make_score(bonus * weight * weight / 20, 0);
   }
 
 
