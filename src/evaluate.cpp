@@ -137,16 +137,16 @@ namespace {
   // Outpost[knight/bishop][supported by pawn] contains bonuses for knights and
   // bishops outposts, bigger if outpost piece is supported by a pawn.
   const Score Outpost[][2] = {
-    { S(43, 4), S(65,13) }, // Knights
-    { S(20, 1), S(29, 6) }  // Bishops
+    { S(43, 0), S(65, 0) }, // Knights
+    { S(20, 0), S(29, 0) }  // Bishops
   };
 
   // ReachableOutpost[knight/bishop][supported by pawn] contains bonuses for
   // knights and bishops which can reach an outpost square in one move, bigger
   // if outpost square is supported by a pawn.
   const Score ReachableOutpost[][2] = {
-    { S(21, 5), S(35, 8) }, // Knights
-    { S( 8, 0), S(14, 4) }  // Bishops
+    { S(21, 0), S(35, 0) }, // Knights
+    { S( 8, 0), S(14, 0) }  // Bishops
   };
 
   // RookOnFile[semiopen/open] contains bonuses for each rook when there is no
