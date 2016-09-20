@@ -29,12 +29,17 @@ Value PieceValue[PHASE_NB][PIECE_NB] = {
 namespace PSQT {
 
 #define S(mg, eg) make_score(mg, eg)
+#define V(value)  Value(value)
 
 // Bonus[PieceType][Square / 2] contains Piece-Square scores. For each piece
 // type on a given square a (middlegame, endgame) score pair is assigned. Table
 // is defined for files A..D and white side: it is symmetric for black side and
 // second half of the files.
-const Score Bonus[][RANK_NB][int(FILE_NB) / 2] = {
+Value Center   = V(216),
+      InnerMid = V(201), InnerLong = V(197),
+      OuterMid = V(175), Outer     = V(163), OuterLong = V(120),
+      MidEdge  = V(122), NearEdge  = V(108), FarEdge   = V( 73), Corner = V(29);
+Score Bonus[][RANK_NB][int(FILE_NB) / 2] = {
   { },
   { // Pawn
    { S(  0, 0), S(  0, 0), S(  0, 0), S( 0, 0) },
@@ -86,18 +91,19 @@ const Score Bonus[][RANK_NB][int(FILE_NB) / 2] = {
    { S(-1,-72), S(-4,-56), S(-1,-41), S( 0,-29) }
   },
   { // King
-   { S(291, 29), S(344, 73), S(294,108), S(219,122) },
-   { S(289, 73), S(329,120), S(263,163), S(205,175) },
-   { S(226,108), S(271,163), S(202,197), S(136,201) },
-   { S(204,122), S(212,175), S(175,201), S(137,216) },
-   { S(177,122), S(205,175), S(143,201), S( 94,216) },
-   { S(147,108), S(188,163), S(113,197), S( 70,201) },
-   { S(116, 73), S(158,120), S( 93,163), S( 48,175) },
-   { S( 94, 29), S(120, 73), S( 78,108), S( 31,122) }
+   { S(291, Corner),   S(344, FarEdge),   S(294, NearEdge),  S(219, MidEdge)  },
+   { S(289, FarEdge),  S(329, OuterLong), S(263, Outer),     S(205, OuterMid) },
+   { S(226, NearEdge), S(271, Outer),     S(202, InnerLong), S(136, InnerMid) },
+   { S(204, MidEdge),  S(212, OuterMid),  S(175, InnerMid),  S(137, Center)   },
+   { S(177, MidEdge),  S(205, OuterMid),  S(143, InnerMid),  S( 94, Center)   },
+   { S(147, NearEdge), S(188, Outer),     S(113, InnerLong), S( 70, InnerMid) },
+   { S(116, FarEdge),  S(158, OuterLong), S( 93, Outer),     S( 48, OuterMid) },
+   { S( 94, Corner),   S(120, FarEdge),   S( 78, NearEdge),  S( 31, MidEdge)  }
   }
 };
 
 #undef S
+#undef V
 
 Score psq[PIECE_NB][SQUARE_NB];
 
@@ -121,5 +127,32 @@ void init() {
       }
   }
 }
+
+void update_psqt() {
+
+#define S(mg, eg) make_score(mg, eg)
+Bonus[KING][RANK_1][FILE_A] = S(291, Corner);    Bonus[KING][RANK_1][FILE_B] = S(344, FarEdge);
+Bonus[KING][RANK_1][FILE_C] = S(294, NearEdge);  Bonus[KING][RANK_1][FILE_D] = S(219, MidEdge);
+Bonus[KING][RANK_2][FILE_A] = S(289, FarEdge);   Bonus[KING][RANK_2][FILE_B] = S(329, OuterLong);
+Bonus[KING][RANK_2][FILE_C] = S(263, Outer);     Bonus[KING][RANK_2][FILE_D] = S(205, OuterMid);
+Bonus[KING][RANK_3][FILE_A] = S(226, NearEdge);  Bonus[KING][RANK_3][FILE_B] = S(271, Outer);
+Bonus[KING][RANK_3][FILE_C] = S(202, InnerLong); Bonus[KING][RANK_3][FILE_D] = S(136, InnerMid);
+Bonus[KING][RANK_4][FILE_A] = S(204, MidEdge);   Bonus[KING][RANK_4][FILE_B] = S(212, OuterMid);
+Bonus[KING][RANK_4][FILE_C] = S(175, InnerMid);  Bonus[KING][RANK_4][FILE_D] = S(137, Center);
+Bonus[KING][RANK_5][FILE_A] = S(177, MidEdge);   Bonus[KING][RANK_5][FILE_B] = S(205, OuterMid);
+Bonus[KING][RANK_5][FILE_C] = S(143, InnerMid);  Bonus[KING][RANK_5][FILE_D] = S( 94, Center);
+Bonus[KING][RANK_6][FILE_A] = S(147, NearEdge);  Bonus[KING][RANK_6][FILE_B] = S(188, Outer);
+Bonus[KING][RANK_6][FILE_C] = S(113, InnerLong); Bonus[KING][RANK_6][FILE_D] = S( 70, InnerMid);
+Bonus[KING][RANK_7][FILE_A] = S(116, FarEdge);   Bonus[KING][RANK_7][FILE_B] = S(158, OuterLong);
+Bonus[KING][RANK_7][FILE_C] = S( 93, Outer);     Bonus[KING][RANK_7][FILE_D] = S( 48, OuterMid);
+Bonus[KING][RANK_8][FILE_A] = S( 94, Corner);    Bonus[KING][RANK_8][FILE_B] = S(120, FarEdge);
+Bonus[KING][RANK_8][FILE_C] = S( 78, NearEdge);  Bonus[KING][RANK_8][FILE_D] = S( 31, MidEdge);
+#undef S
+
+init();
+
+}
+
+TUNE(Center, InnerMid, InnerLong, OuterMid, Outer, OuterLong, MidEdge, NearEdge, FarEdge, Corner, update_psqt);
 
 } // namespace PSQT
