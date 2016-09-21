@@ -153,6 +153,6 @@ init();
 
 }
 
-TUNE(Center, InnerMid, InnerLong, OuterMid, Outer, OuterLong, MidEdge, NearEdge, FarEdge, Corner, update_psqt);
+TUNE(SetRange(-50, 50), Center, InnerMid, InnerLong, OuterMid, Outer, OuterLong, MidEdge, NearEdge, FarEdge, Corner, update_psqt);
 
 } // namespace PSQT
