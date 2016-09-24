@@ -47,6 +47,9 @@ namespace {
   // Doubled pawn penalty
   const Score Doubled = S(18,38);
 
+  // Bonus for preventing opponent's pawns from supporting neighbours
+  const Score ChainStopper = S(20, 18);
+
   // Lever bonus by rank
   const Score Lever[RANK_NB] = {
     S( 0,  0), S( 0,  0), S(0, 0), S(0, 0),
@@ -173,6 +176,9 @@ namespace {
 
         if (lever)
             score += Lever[relative_rank(Us, s)];
+
+        if (opposed && (pawn_attack_span(~Us, s) & theirPawns))
+            score += ChainStopper;
     }
 
     return score;
