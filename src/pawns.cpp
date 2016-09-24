@@ -107,8 +107,8 @@ namespace {
     e->kingSquares[Us] = SQ_NONE;
     e->semiopenFiles[Us] = 0xFF;
     e->pawnAttacks[Us] = shift_bb<Right>(ourPawns) | shift_bb<Left>(ourPawns);
-    e->pawnsOnSquares[Us][BLACK] = popcount(ourPawns & DarkSquares);
-    e->pawnsOnSquares[Us][WHITE] = pos.count<PAWN>(Us) - e->pawnsOnSquares[Us][BLACK];
+    e->pawnsOnSquares[Us][WHITE][0] = e->pawnsOnSquares[Us][WHITE][1] = 0;
+    e->pawnsOnSquares[Us][BLACK][0] = e->pawnsOnSquares[Us][BLACK][1] = 0;
 
     // Loop through all pawns of the current color and score each pawn
     while ((s = *pl++) != SQ_NONE)
@@ -151,6 +151,8 @@ namespace {
         // full attack info to evaluate them.
         if (!stoppers && !(ourPawns & forward_bb(Us, s)))
             e->passedPawns[Us] |= s;
+
+        e->pawnsOnSquares[Us][DarkSquares & s ? BLACK : WHITE][!!supported]++;
 
         // Score this pawn
         if (!neighbours)
