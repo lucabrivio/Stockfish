@@ -39,7 +39,7 @@ namespace {
 
   // Unsupported pawn penalty for pawns which are neither isolated or backward,
   // by number of pawns it supports [less than 2 / exactly 2].
-  const Score Unsupported[2] = { S(18, 10), S(22, 14) };
+  const Score Unsupported[2] = { S(17, 8), S(21, 12) };
 
   // Connected pawn bonus by opposed, phalanx, twice supported and rank
   Score Connected[2][2][2][RANK_NB];
