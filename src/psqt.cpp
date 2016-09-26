@@ -30,12 +30,17 @@ Value PieceValue[PHASE_NB][PIECE_NB] = {
 namespace PSQT {
 
 #define S(mg, eg) make_score(mg, eg)
+#define V(value)  Value(value)
 
 // Bonus[PieceType][Square / 2] contains Piece-Square scores. For each piece
 // type on a given square a (middlegame, endgame) score pair is assigned. Table
 // is defined for files A..D and white side: it is symmetric for black side and
 // second half of the files.
-const Score Bonus[][RANK_NB][int(FILE_NB) / 2] = {
+Value Center   = V( 20),
+      InnerMid = V(  7), InnerLong = V( -9),
+      OuterMid = V( -5), Outer     = V(-19), OuterLong = V(-30),
+      MidEdge  = V(-29), NearEdge  = V(-41), FarEdge   = V(-56), Corner = V(-72);
+Score Bonus[][RANK_NB][int(FILE_NB) / 2] = {
   { },
   { // Pawn
    { S(  0, 0), S(  0, 0), S(  0, 0), S( 0, 0) },
@@ -77,14 +82,14 @@ const Score Bonus[][RANK_NB][int(FILE_NB) / 2] = {
    { S(-23, 0), S(-15, 0), S(-11, 0), S(-5, 0) }
   },
   { // Queen
-   { S( 0,-72), S(-3,-56), S(-4,-41), S(-1,-29) },
-   { S(-4,-56), S( 6,-30), S( 9,-19), S( 8, -5) },
-   { S(-2,-41), S( 6,-19), S( 9, -9), S( 9,  7) },
-   { S(-1,-29), S( 8, -5), S(10,  7), S( 7, 20) },
-   { S(-3,-29), S( 9, -5), S( 8,  7), S( 7, 20) },
-   { S(-2,-41), S( 6,-19), S( 8, -9), S(10,  7) },
-   { S(-2,-56), S( 7,-30), S( 7,-19), S( 6, -5) },
-   { S(-1,-72), S(-4,-56), S(-1,-41), S( 0,-29) }
+   { S( 0, Corner),   S(-3, FarEdge),   S(-4, NearEdge),  S(-1, MidEdge) },
+   { S(-4, FarEdge),  S( 6, OuterLong), S( 9, Outer),     S( 8, OuterMid) },
+   { S(-2, NearEdge), S( 6, Outer),     S( 9, InnerLong), S( 9, InnerMid) },
+   { S(-1, MidEdge),  S( 8, OuterMid),  S(10, InnerMid),  S( 7, Center) },
+   { S(-3, MidEdge),  S( 9, OuterMid),  S( 8, InnerMid),  S( 7, Center) },
+   { S(-2, NearEdge), S( 6, Outer),     S( 8, InnerLong), S(10, InnerMid) },
+   { S(-2, FarEdge),  S( 7, OuterLong), S( 7, Outer),     S( 6, OuterMid) },
+   { S(-1, Corner),   S(-4, FarEdge),   S(-1, NearEdge),  S( 0, MidEdge) }
   },
   { // King
    { S(291, 29), S(344, 71), S(294,113), S(219,119) },
@@ -99,6 +104,7 @@ const Score Bonus[][RANK_NB][int(FILE_NB) / 2] = {
 };
 
 #undef S
+#undef V
 
 Score psq[PIECE_NB][SQUARE_NB];
 
@@ -122,5 +128,37 @@ void init() {
       }
   }
 }
+
+void update_psqt() {
+
+#define S(mg, eg) make_score(mg, eg)
+Bonus[QUEEN][RANK_1][FILE_A] = S( 0, Corner);    Bonus[QUEEN][RANK_1][FILE_B] = S(-3, FarEdge);
+Bonus[QUEEN][RANK_1][FILE_C] = S(-4, NearEdge);  Bonus[QUEEN][RANK_1][FILE_D] = S(-1, MidEdge);
+Bonus[QUEEN][RANK_2][FILE_A] = S(-4, FarEdge);   Bonus[QUEEN][RANK_2][FILE_B] = S( 6, OuterLong);
+Bonus[QUEEN][RANK_2][FILE_C] = S( 9, Outer);     Bonus[QUEEN][RANK_2][FILE_D] = S( 8, OuterMid);
+Bonus[QUEEN][RANK_3][FILE_A] = S(-2, NearEdge);  Bonus[QUEEN][RANK_3][FILE_B] = S( 6, Outer);
+Bonus[QUEEN][RANK_3][FILE_C] = S( 9, InnerLong); Bonus[QUEEN][RANK_3][FILE_D] = S( 9, InnerMid);
+Bonus[QUEEN][RANK_4][FILE_A] = S(-1, MidEdge);   Bonus[QUEEN][RANK_4][FILE_B] = S( 8, OuterMid);
+Bonus[QUEEN][RANK_4][FILE_C] = S(10, InnerMid);  Bonus[QUEEN][RANK_4][FILE_D] = S( 7, Center);
+Bonus[QUEEN][RANK_5][FILE_A] = S(-3, MidEdge);   Bonus[QUEEN][RANK_5][FILE_B] = S( 9, OuterMid);
+Bonus[QUEEN][RANK_5][FILE_C] = S( 8, InnerMid);  Bonus[QUEEN][RANK_5][FILE_D] = S( 7, Center);
+Bonus[QUEEN][RANK_6][FILE_A] = S(-2, NearEdge);  Bonus[QUEEN][RANK_6][FILE_B] = S( 6, Outer);
+Bonus[QUEEN][RANK_6][FILE_C] = S( 8, InnerLong); Bonus[QUEEN][RANK_6][FILE_D] = S(10, InnerMid);
+Bonus[QUEEN][RANK_7][FILE_A] = S(-2, FarEdge);   Bonus[QUEEN][RANK_7][FILE_B] = S( 7, OuterLong);
+Bonus[QUEEN][RANK_7][FILE_C] = S( 7, Outer);     Bonus[QUEEN][RANK_7][FILE_D] = S( 6, OuterMid);
+Bonus[QUEEN][RANK_8][FILE_A] = S(-1, Corner);    Bonus[QUEEN][RANK_8][FILE_B] = S(-4, FarEdge);
+Bonus[QUEEN][RANK_8][FILE_C] = S(-1, NearEdge);  Bonus[QUEEN][RANK_8][FILE_D] = S( 0, MidEdge);
+#undef S
+
+init();
+
+}
+
+TUNE(
+     SetRange(-30,70), Center  ,
+     SetRange(-43,57), InnerMid, SetRange(-59,41), InnerLong,
+     SetRange(-55,45), OuterMid, SetRange(-69,31), Outer    , SetRange( -80,20), OuterLong,
+     SetRange(-79,21), MidEdge , SetRange(-91, 9), NearEdge , SetRange(-106,-6), FarEdge  , SetRange(-122,-22), Corner,
+     update_psqt);
 
 } // namespace PSQT
