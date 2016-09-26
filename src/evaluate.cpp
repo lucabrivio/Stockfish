@@ -185,10 +185,11 @@ namespace {
   };
 
   // BishopPawns[color][supported] contains a bonus for pawns on same color squares
-  const Score BishopPawns[2][2] = {
-    { S(8, 13), S( 9, 10) }, // our   pawns
-    { S(3,  9), S(-2, -6) }  // their pawns
+  Score BishopPawns[][2] = {
+    { S(8, 12), S(8, 12) }, // our   pawns
+    { S(0,  0), S(0,  0) }  // their pawns
   };
+  TUNE(SetRange(-25, 25), BishopPawns);
 
   // Assorted bonuses and penalties used by evaluation
   const Score MinorBehindPawn     = S(16,  0);
