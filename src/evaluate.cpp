@@ -181,11 +181,14 @@ namespace {
   // PassedFile[File] contains a bonus according to the file of a passed pawn
   const Score PassedFile[FILE_NB] = {
     S(  9, 10), S( 2, 10), S( 1, -8), S(-20,-12),
-    S(-20,-12), S( 1, -8), S( 2, 10), S( 9, 10)
+    S(-20,-12), S( 1, -8), S( 2, 10), S( 9,  10)
   };
 
-  // BishopPawns[supported] contains a bonus for pawns on same color squares
-  const Score BishopPawns[2] = { S(7, 13), S(7, 7) };
+  // BishopPawns[color][supported] contains a bonus for pawns on same color squares
+  const Score BishopPawns[2][2] = {
+    { S(8, 13), S( 9, 10) }, // our   pawns
+    { S(3,  9), S(-2, -6) }  // their pawns
+  };
 
   // Assorted bonuses and penalties used by evaluation
   const Score MinorBehindPawn     = S(16,  0);
@@ -315,8 +318,10 @@ namespace {
 
             // Penalty for pawns on the same color square as the bishop
             if (Pt == BISHOP)
-                score -=  BishopPawns[0] * ei.pi->pawns_on_same_color_squares(Us, s, false)
-                        + BishopPawns[1] * ei.pi->pawns_on_same_color_squares(Us, s, true);
+                score -=  BishopPawns[0][0] * ei.pi->pawns_on_same_color_squares( Us, s, false)
+                        + BishopPawns[0][1] * ei.pi->pawns_on_same_color_squares( Us, s, true)
+                        + BishopPawns[1][0] * ei.pi->pawns_on_same_color_squares(~Us, s, false)
+                        + BishopPawns[1][1] * ei.pi->pawns_on_same_color_squares(~Us, s, true);
 
             // An important Chess960 pattern: A cornered bishop blocked by a friendly
             // pawn diagonally in front of it is a very serious problem, especially
