@@ -185,7 +185,7 @@ namespace {
   };
 
   // BishopPawns[supported] contains a bonus for pawns on same color squares
-  const Score BishopPawns[2] = { S(8, 13), S(9, 10) };
+  const Score BishopPawns[2] = { S(7, 13), S(7, 7) };
 
   // Assorted bonuses and penalties used by evaluation
   const Score MinorBehindPawn     = S(16,  0);
