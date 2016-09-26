@@ -186,8 +186,8 @@ namespace {
 
   // BishopPawns[color][supported] contains a penalty (bonus) for pawns on same color squares
   const Score BishopPawns[2][2] = {
-    { S(8, 13), S( 9, 10) }, // our   pawns
-    { S(3,  9), S(-2, -6) }  // their pawns
+    { S( 5, 11), S(13, 14) }, // our   pawns
+    { S(-3, -2), S( 8,  2) }  // their pawns
   };
 
   // Assorted bonuses and penalties used by evaluation
