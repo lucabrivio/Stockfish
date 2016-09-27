@@ -181,7 +181,7 @@ namespace {
   // PassedFile[File] contains a bonus according to the file of a passed pawn
   const Score PassedFile[FILE_NB] = {
     S(  9, 10), S( 2, 10), S( 1, -8), S(-20,-12),
-    S(-20,-12), S( 1, -8), S( 2, 10), S( 9,  10)
+    S(-20,-12), S( 1, -8), S( 2, 10), S(  9, 10)
   };
 
   // Assorted bonuses and penalties used by evaluation
@@ -310,7 +310,7 @@ namespace {
                 && (pos.pieces(PAWN) & (s + pawn_push(Us))))
                 score += MinorBehindPawn;
 
-            // Penalty for pawns on the same color square as the bishop
+            // Penalty/bonus for friendly and enemy pawns on square of the same color
             if (Pt == BISHOP)
                 score -= ei.pi->pawns_on_same_color_squares(Us, s);
 

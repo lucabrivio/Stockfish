@@ -54,10 +54,10 @@ namespace {
   };
 
   // BishopPawns[color][supported] contains a penalty
-  // (bonus) for pawns on same color squares as bishops
+  // (bonus) for pawns on same-color squares as bishops
   const Score BishopPawns[2][2] = {
-    { S( 4, 10), S(14, 18) }, // our   pawns
-    { S(-4,  0), S( 7,  2) }  // their pawns
+    { S( 4, 10), S(14, 18) }, // friendly pawns
+    { S(-4,  0), S( 7,  2) }  // enemy    pawns
   };
 
   // Weakness of our pawn shelter in front of the king by [distance from edge][rank]
@@ -226,7 +226,7 @@ Entry* probe(const Position& pos) {
 
   e->key = key;
   e->pawnsOnSquares[WHITE][WHITE] = e->pawnsOnSquares[WHITE][BLACK] =
-  e->pawnsOnSquares[BLACK][WHITE] = e->pawnsOnSquares[BLACK][BLACK] = make_score(0, 0);
+  e->pawnsOnSquares[BLACK][WHITE] = e->pawnsOnSquares[BLACK][BLACK] = SCORE_ZERO;
   e->score = evaluate<WHITE>(pos, e) - evaluate<BLACK>(pos, e);
   e->asymmetry = popcount(e->semiopenFiles[WHITE] ^ e->semiopenFiles[BLACK]);
   e->openFiles = popcount(e->semiopenFiles[WHITE] & e->semiopenFiles[BLACK]);
