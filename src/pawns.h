@@ -48,8 +48,8 @@ struct Entry {
     return semiopenFiles[c] & (leftSide ? (1 << f) - 1 : ~((1 << (f + 1)) - 1));
   }
 
-  int pawns_on_same_color_squares(Color c, Square s, bool is_supported) const {
-    return pawnsOnSquares[c][!!(DarkSquares & s)][is_supported];
+  Score pawns_on_same_color_squares(Color c, Square s) const {
+    return pawnsOnSquares[c][!!(DarkSquares & s)];
   }
 
   template<Color Us>
@@ -73,7 +73,7 @@ struct Entry {
   Score kingSafety[COLOR_NB];
   int castlingRights[COLOR_NB];
   int semiopenFiles[COLOR_NB];
-  int pawnsOnSquares[COLOR_NB][COLOR_NB][2]; // [color][light/dark squares][supported]
+  Score pawnsOnSquares[COLOR_NB][COLOR_NB]; // [color][light/dark squares]
   int asymmetry;
   int openFiles;
 };

@@ -53,6 +53,13 @@ namespace {
     S(17, 16), S(33, 32), S(0, 0), S(0, 0)
   };
 
+  // BishopPawns[color][supported] contains a penalty
+  // (bonus) for pawns on same color squares as bishops
+  const Score BishopPawns[2][2] = {
+    { S( 4, 10), S(14, 18) }, // our   pawns
+    { S(-4,  0), S( 7,  2) }  // their pawns
+  };
+
   // Weakness of our pawn shelter in front of the king by [distance from edge][rank]
   const Value ShelterWeakness[][RANK_NB] = {
     { V( 97), V(21), V(26), V(51), V(87), V( 89), V( 99) },
@@ -110,8 +117,6 @@ namespace {
     e->semiopenFiles[Us] = 0xFF;
     e->kingSquares[Us]   = SQ_NONE;
     e->pawnAttacks[Us]   = shift<Right>(ourPawns) | shift<Left>(ourPawns);
-    e->pawnsOnSquares[Us][WHITE][0] = e->pawnsOnSquares[Us][WHITE][1] = 0;
-    e->pawnsOnSquares[Us][BLACK][0] = e->pawnsOnSquares[Us][BLACK][1] = 0;
 
     // Loop through all pawns of the current color and score each pawn
     while ((s = *pl++) != SQ_NONE)
@@ -155,7 +160,9 @@ namespace {
         if (!stoppers && !(ourPawns & forward_bb(Us, s)))
             e->passedPawns[Us] |= s;
 
-        e->pawnsOnSquares[Us][DarkSquares & s ? BLACK : WHITE][!!supported]++;
+        Color sqColor = DarkSquares & s ? BLACK : WHITE;
+        e->pawnsOnSquares[ Us][sqColor] += BishopPawns[0][!!supported];
+        e->pawnsOnSquares[~Us][sqColor] += BishopPawns[1][!!supported];
 
         // Score this pawn
         if (!neighbours)
@@ -218,6 +225,8 @@ Entry* probe(const Position& pos) {
       return e;
 
   e->key = key;
+  e->pawnsOnSquares[WHITE][WHITE] = e->pawnsOnSquares[WHITE][BLACK] =
+  e->pawnsOnSquares[BLACK][WHITE] = e->pawnsOnSquares[BLACK][BLACK] = make_score(0, 0);
   e->score = evaluate<WHITE>(pos, e) - evaluate<BLACK>(pos, e);
   e->asymmetry = popcount(e->semiopenFiles[WHITE] ^ e->semiopenFiles[BLACK]);
   e->openFiles = popcount(e->semiopenFiles[WHITE] & e->semiopenFiles[BLACK]);

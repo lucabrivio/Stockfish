@@ -184,12 +184,6 @@ namespace {
     S(-20,-12), S( 1, -8), S( 2, 10), S( 9,  10)
   };
 
-  // BishopPawns[color][supported] contains a penalty (bonus) for pawns on same color squares
-  const Score BishopPawns[2][2] = {
-    { S( 4, 10), S(14, 18) }, // our   pawns
-    { S(-4,  0), S( 7,  2) }  // their pawns
-  };
-
   // Assorted bonuses and penalties used by evaluation
   const Score MinorBehindPawn     = S(16,  0);
   const Score RookOnPawn          = S( 8, 24);
@@ -318,10 +312,7 @@ namespace {
 
             // Penalty for pawns on the same color square as the bishop
             if (Pt == BISHOP)
-                score -=  BishopPawns[0][0] * ei.pi->pawns_on_same_color_squares( Us, s, false)
-                        + BishopPawns[0][1] * ei.pi->pawns_on_same_color_squares( Us, s, true)
-                        + BishopPawns[1][0] * ei.pi->pawns_on_same_color_squares(~Us, s, false)
-                        + BishopPawns[1][1] * ei.pi->pawns_on_same_color_squares(~Us, s, true);
+                score -= ei.pi->pawns_on_same_color_squares(Us, s);
 
             // An important Chess960 pattern: A cornered bishop blocked by a friendly
             // pawn diagonally in front of it is a very serious problem, especially
