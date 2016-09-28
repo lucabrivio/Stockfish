@@ -60,6 +60,12 @@ namespace {
     { S(-4,  0), S( 7,  2) }  // enemy    pawns
   };
 
+  Value BishopPawnFile[2][int(FILE_NB) / 2] = {
+    {VALUE_ZERO, VALUE_ZERO, VALUE_ZERO, VALUE_ZERO},
+    {VALUE_ZERO, VALUE_ZERO, VALUE_ZERO, VALUE_ZERO}
+  };
+  TUNE(SetRange(-25, 25), BishopPawnFile);
+
   // Weakness of our pawn shelter in front of the king by [distance from edge][rank]
   const Value ShelterWeakness[][RANK_NB] = {
     { V( 97), V(21), V(26), V(51), V(87), V( 89), V( 99) },
@@ -161,8 +167,11 @@ namespace {
             e->passedPawns[Us] |= s;
 
         Color sqColor = DarkSquares & s ? BLACK : WHITE;
-        e->pawnsOnSquares[ Us][sqColor] += BishopPawns[0][!!supported];
-        e->pawnsOnSquares[~Us][sqColor] += BishopPawns[1][!!supported];
+        File f2 = (f < FILE_E) ? f : (File)distance(f, FILE_H);
+        e->pawnsOnSquares[ Us][sqColor] +=  BishopPawns[0][!!supported]
+                                          + make_score(0, BishopPawnFile[0][f2]);
+        e->pawnsOnSquares[~Us][sqColor] +=  BishopPawns[1][!!supported]
+                                          + make_score(0, BishopPawnFile[1][f2]);
 
         // Score this pawn
         if (!neighbours)
