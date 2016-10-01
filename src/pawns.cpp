@@ -169,9 +169,9 @@ namespace {
         Color sqColor = DarkSquares & s ? BLACK : WHITE;
         File f2 = (f < FILE_E) ? f : (File)distance(f, FILE_H);
         e->pawnsOnSquares[ Us][sqColor] +=  BishopPawns[0][!!supported]
-                                          + make_score(BishopPawnFile[0][f2], 0);
+                                          + make_score(0, BishopPawnFile[0][f2]);
         e->pawnsOnSquares[~Us][sqColor] +=  BishopPawns[1][!!supported]
-                                          + make_score(BishopPawnFile[1][f2], 0);
+                                          + make_score(0, BishopPawnFile[1][f2]);
 
         // Score this pawn
         if (!neighbours)
