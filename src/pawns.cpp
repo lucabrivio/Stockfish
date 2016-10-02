@@ -47,9 +47,6 @@ namespace {
   // Doubled pawn penalty
   const Score Doubled = S(18,38);
 
-  // Bonus for preventing opponent's pawns from supporting neighbours
-  const Score ChainStopper = S(20, 18);
-
   // Lever bonus by rank
   const Score Lever[RANK_NB] = {
     S( 0,  0), S( 0,  0), S(0, 0), S(0, 0),
@@ -99,9 +96,9 @@ namespace {
     const Square Right = (Us == WHITE ? NORTH_EAST : SOUTH_WEST);
     const Square Left  = (Us == WHITE ? NORTH_WEST : SOUTH_EAST);
 
-    Bitboard b, neighbours, stoppers, doubled, supported, phalanx;
+    Bitboard b, opposed, neighbours, stoppers, doubled, supported, phalanx;
     Square s;
-    bool opposed, lever, connected, backward;
+    bool lever, connected, backward, severed;
     Score score = SCORE_ZERO;
     const Square* pl = pos.squares<PAWN>(Us);
     const Bitboard* pawnAttacksBB = StepAttacksBB[make_piece(Us, PAWN)];
@@ -150,6 +147,11 @@ namespace {
             // stopper on adjacent file which controls the way to that rank.
             backward = (b | shift<Up>(b & adjacent_files_bb(f))) & stoppers;
 
+            // The pawn is "severed" when it cannot at all progress to support
+            // his neighbours: in this case we apply the same penalty as for
+            // non-opposed backward pawns
+            severed = (b & opposed) && !(b & neighbours);
+
             assert(!backward || !(pawn_attack_span(Them, s + Up) & neighbours));
         }
 
@@ -160,25 +162,22 @@ namespace {
 
         // Score this pawn
         if (!neighbours)
-            score -= Isolated[opposed];
+            score -= Isolated[!!opposed];
 
         else if (backward)
-            score -= Backward[opposed];
+            score -= Backward[!!opposed ^ severed];
 
         else if (!supported)
             score -= Unsupported[more_than_one(neighbours & pawnAttacksBB[s])];
 
         if (connected)
-            score += Connected[opposed][!!phalanx][more_than_one(supported)][relative_rank(Us, s)];
+            score += Connected[!!opposed][!!phalanx][more_than_one(supported)][relative_rank(Us, s)];
 
         if (doubled)
             score -= Doubled;
 
         if (lever)
             score += Lever[relative_rank(Us, s)];
-
-        if (opposed && (pawn_attack_span(~Us, s) & theirPawns))
-            score += ChainStopper;
     }
 
     return score;
