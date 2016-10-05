@@ -106,6 +106,7 @@ namespace {
     Bitboard theirPawns = pos.pieces(Them, PAWN);
 
     e->passedPawns[Us]   = e->pawnAttacksSpan[Us] = 0;
+    e->squaresAhead[Us]  = 0xFFFFFFFFFFFFFFFFULL;
     e->semiopenFiles[Us] = 0xFF;
     e->kingSquares[Us]   = SQ_NONE;
     e->pawnAttacks[Us]   = shift<Right>(ourPawns) | shift<Left>(ourPawns);
@@ -121,6 +122,7 @@ namespace {
 
         e->semiopenFiles[Us]   &= ~(1 << f);
         e->pawnAttacksSpan[Us] |= pawn_attack_span(Us, s);
+        e->squaresAhead[Us]    |= file_bb(s) & forward_bb(Us, s);
 
         // Flag the pawn
         opposed    = theirPawns & forward_bb(Us, s);
@@ -216,7 +218,7 @@ Entry* probe(const Position& pos) {
 
   e->key = key;
   e->score = evaluate<WHITE>(pos, e) - evaluate<BLACK>(pos, e);
-  e->asymmetry = popcount(e->semiopenFiles[WHITE] ^ e->semiopenFiles[BLACK]);
+  e->battlefield = popcount(e->squaresAhead[WHITE] & e->squaresAhead[BLACK]) - 8 * e->openFiles;
   e->openFiles = popcount(e->semiopenFiles[WHITE] & e->semiopenFiles[BLACK]);
   return e;
 }
