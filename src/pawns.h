@@ -37,7 +37,7 @@ struct Entry {
   Bitboard pawn_attacks(Color c) const { return pawnAttacks[c]; }
   Bitboard passed_pawns(Color c) const { return passedPawns[c]; }
   Bitboard pawn_attacks_span(Color c) const { return pawnAttacksSpan[c]; }
-  int pawn_battlefield() const { return battlefield; }
+  int pawn_attacks_squares() const { return pawnAttacksSquares; }
   int open_files() const { return openFiles; }
 
   int semiopen_file(Color c, File f) const {
@@ -73,9 +73,8 @@ struct Entry {
   Score kingSafety[COLOR_NB];
   int castlingRights[COLOR_NB];
   int semiopenFiles[COLOR_NB];
-  Bitboard squaresAhead[COLOR_NB];
   int pawnsOnSquares[COLOR_NB][COLOR_NB]; // [color][light/dark squares]
-  int battlefield;
+  int pawnAttacksSquares;
   int openFiles;
 };
 
