@@ -216,7 +216,7 @@ Entry* probe(const Position& pos) {
 
   e->key = key;
   e->score = evaluate<WHITE>(pos, e) - evaluate<BLACK>(pos, e);
-  e->pawnAttacksSquares = popcount(e->pawnAttacksSpan[WHITE] | e->pawnAttacksSpan[BLACK]);
+  e->pawnAttacksSquares = popcount(e->pawnAttacksSpan[WHITE] ^ e->pawnAttacksSpan[BLACK]);
   e->openFiles = popcount(e->semiopenFiles[WHITE] & e->semiopenFiles[BLACK]);
   return e;
 }
