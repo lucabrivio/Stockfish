@@ -34,8 +34,8 @@ namespace {
   // Isolated pawn penalty by opposed flag
   const Score Isolated[2] = { S(45, 40), S(30, 27) };
 
-  // Backward pawn penalty by opposed flag
-  const Score Backward[2] = { S(56, 33), S(41, 19) };
+  // Backward pawn penalty by opposed, lagged, and severed flags
+  const Score Backward[4] = { S(60, 35), S(38, 13), S(34, 24), S(61, 30) };
 
   // Unsupported pawn penalty for pawns which are neither isolated or backward
   const Score Unsupported = S(17, 8);
@@ -97,7 +97,7 @@ namespace {
 
     Bitboard b, opposed, neighbours, stoppers, doubled, supported, phalanx;
     Square s;
-    bool lever, connected, backward, severed;
+    bool lever, connected, backward, lagged, severed;
     Score score = SCORE_ZERO;
     const Square* pl = pos.squares<PAWN>(Us);
     const Bitboard* pawnAttacksBB = StepAttacksBB[make_piece(Us, PAWN)];
@@ -146,10 +146,13 @@ namespace {
             // stopper on adjacent file which controls the way to that rank.
             backward = (b | shift<Up>(b & adjacent_files_bb(f))) & stoppers;
 
-            // The pawn is "severed" when it cannot at all progress to support
-            // his neighbours: in this case we apply the same penalty as for
-            // non-opposed backward pawns
-            severed = (b & opposed) && !(b & neighbours);
+            // The pawn is 'lagged' when it cannot at all progress to his
+            // neighbours' rank
+            lagged = (b & opposed);
+
+            // The pawn is 'severed' when it cannot at all progress to support
+            // his neighbours
+            severed = lagged && !(b & neighbours);
 
             assert(!backward || !(pawn_attack_span(Them, s + Up) & neighbours));
         }
@@ -164,7 +167,7 @@ namespace {
             score -= Isolated[!!opposed];
 
         else if (backward)
-            score -= Backward[!!opposed ^ severed];
+            score -= Backward[!!opposed + lagged + severed];
 
         else if (!supported)
             score -= Unsupported;
