@@ -52,14 +52,14 @@ namespace {
     S(17, 16), S(33, 32), S(0, 0), S(0, 0)
   };
 
-  // BishopOurPawns[supported][centered] contains a penalty
+  // BishopOurPawns[centered][supported] contains a penalty
   // for friendly pawns on same-color squares as bishops
   const Score BishopFriendlyPawns[2][2] = {
     { S( 4,  9), S(14, 16) }, // non-centered
     { S( 4, 12), S(14, 24) }  // centered
   };
 
-  // BishopTheirPawns[supported][attacking the center] contains a
+  // BishopTheirPawns[attacking the center][supported] contains a
   // penalty (bonus) for enemy pawns on same-color squares as bishops
   const Score BishopEnemyPawns[2][2] = {
     { S(-4, -1), S( 7,  2) }, // not attacking the center
@@ -167,8 +167,8 @@ namespace {
             e->passedPawns[Us] |= s;
 
         Color sqColor = DarkSquares & s ? BLACK : WHITE;
-        e->pawnsOnSquares[ Us][sqColor] += BishopFriendlyPawns[!!supported][!!(Center & s)];
-        e->pawnsOnSquares[~Us][sqColor] += BishopEnemyPawns[!!supported][!!(Center & pawnAttacksBB[s])];
+        e->pawnsOnSquares[ Us][sqColor] += BishopFriendlyPawns[!!(Center & s)][!!supported];
+        e->pawnsOnSquares[~Us][sqColor] += BishopEnemyPawns[!!(Center & pawnAttacksBB[s])][!!supported];
 
         // Score this pawn
         if (!neighbours)
