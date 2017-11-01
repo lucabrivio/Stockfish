@@ -69,7 +69,7 @@ OBJS = benchmark.o bitbase.o bitboard.o endgame.o evaluate.o main.o \
 optimize = yes
 debug = no
 sanitize = no
-bits = 64
+bits = 32
 prefetch = no
 popcnt = no
 sse = no
@@ -165,8 +165,11 @@ ifeq ($(COMP),gcc)
 			LDFLAGS += -m$(bits)
 		endif
 	else
-		CXXFLAGS += -m$(bits)
-		LDFLAGS += -m$(bits)
+		ifeq ($(ARCH),aarch64)
+		else
+			CXXFLAGS += -m$(bits)
+			LDFLAGS += -m$(bits)
+		endif
 	endif
 
 	ifneq ($(KERNEL),Darwin)
