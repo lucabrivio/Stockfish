@@ -69,7 +69,7 @@ OBJS = benchmark.o bitbase.o bitboard.o endgame.o evaluate.o main.o \
 optimize = yes
 debug = no
 sanitize = no
-bits = 32
+bits = 64
 prefetch = no
 popcnt = no
 sse = no
@@ -122,6 +122,11 @@ endif
 
 ifeq ($(ARCH),armv7)
 	arch = armv7
+	prefetch = yes
+endif
+
+ifeq ($(ARCH),aarch64)
+	arch = aarch64
 	prefetch = yes
 endif
 
@@ -504,7 +509,8 @@ config-sanity:
 	@test "$(sanitize)" = "undefined" || test "$(sanitize)" = "thread" || test "$(sanitize)" = "no"
 	@test "$(optimize)" = "yes" || test "$(optimize)" = "no"
 	@test "$(arch)" = "any" || test "$(arch)" = "x86_64" || test "$(arch)" = "i386" || \
-	 test "$(arch)" = "ppc64" || test "$(arch)" = "ppc" || test "$(arch)" = "armv7"
+	 test "$(arch)" = "ppc64" || test "$(arch)" = "ppc" || test "$(arch)" = "armv7" || \
+	 test "$(arch)" = "aarch64"
 	@test "$(bits)" = "32" || test "$(bits)" = "64"
 	@test "$(prefetch)" = "yes" || test "$(prefetch)" = "no"
 	@test "$(popcnt)" = "yes" || test "$(popcnt)" = "no"
