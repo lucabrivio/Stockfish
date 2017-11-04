@@ -289,6 +289,7 @@ void Thread::search() {
   Value bestValue, alpha, beta, delta;
   Move  lastBestMove = MOVE_NONE;
   Depth lastBestMoveDepth = DEPTH_ZERO;
+  bool  bestMoveChanged = false;
   MainThread* mainThread = (this == Threads.main() ? Threads.main() : nullptr);
   double timeReduction = 1.0;
 
@@ -321,7 +322,7 @@ void Thread::search() {
          && !(Limits.depth && mainThread && rootDepth / ONE_PLY > Limits.depth))
   {
       // Distribute search depths across the threads
-      if (idx)
+      if (idx && !bestMoveChanged)
       {
           int i = (idx - 1) % 20;
           if (((rootDepth / ONE_PLY + rootPos.game_ply() + skipPhase[i]) / skipSize[i]) % 2)
@@ -417,7 +418,10 @@ void Thread::search() {
       if (rootMoves[0].pv[0] != lastBestMove) {
          lastBestMove = rootMoves[0].pv[0];
          lastBestMoveDepth = rootDepth;
+         bestMoveChanged = true;
       }
+      else
+        bestMoveChanged = false;
 
       // Have we found a "mate in x"?
       if (   Limits.mate
