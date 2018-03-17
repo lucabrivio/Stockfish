@@ -867,7 +867,7 @@ namespace {
             + passed< WHITE>() - passed< BLACK>()
             + space<  WHITE>() - space<  BLACK>();
 
-    if (abs(eg_value(score)) > PawnValueEg / 8)
+    if (abs(eg_value(score)) > PawnValueEg / 16)
         score += initiative(eg_value(score));
 
     // Interpolate between a middlegame and a (scaled by 'sf') endgame score
