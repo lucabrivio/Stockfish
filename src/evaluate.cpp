@@ -86,7 +86,7 @@ namespace {
   };
 
   // Threshold for lazy and space evaluation
-  constexpr Value LazyThreshold  = Value(1500);
+  constexpr Value LazyThreshold  = Value(1800);
   constexpr Value SpaceThreshold = Value(12222);
 
   // KingAttackWeights[PieceType] contains king attack weights by piece type
@@ -846,7 +846,7 @@ namespace {
 
     // Early exit if score is high
     Value v = (mg_value(score) + eg_value(score)) / 2;
-    if (abs(v) > LazyThreshold)
+    if (abs(v) + me->game_phase() * 4 > LazyThreshold)
        return pos.side_to_move() == WHITE ? v : -v;
 
     // Main evaluation begins here
