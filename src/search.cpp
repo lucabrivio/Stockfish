@@ -246,7 +246,7 @@ void MainThread::search() {
       && !Limits.depth
       && !Skill(Options["Skill Level"]).enabled()
       &&  rootMoves[0].pv[0] != MOVE_NONE
-      &&  rootMoves[0].score <= previousScore)
+      &&  rootMoves[0].score < previousScore + PawnValueEg / 16)
   {
       for (Thread* th : Threads)
       {
