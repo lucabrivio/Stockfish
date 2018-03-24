@@ -245,13 +245,13 @@ void MainThread::search() {
   if (    Options["MultiPV"] == 1
       && !Limits.depth
       && !Skill(Options["Skill Level"]).enabled()
-      &&  rootMoves[0].pv[0] != MOVE_NONE)
+      &&  rootMoves[0].pv[0] != MOVE_NONE
+      &&  rootMoves[0].score <= previousScore)
   {
       for (Thread* th : Threads)
       {
           Depth depthDiff = th->completedDepth - bestThread->completedDepth;
-          Value scoreDiff =  th->rootMoves[0].score - bestThread->rootMoves[0].score
-                           - std::max(Value(0), bestThread->rootMoves[0].score - previousScore);
+          Value scoreDiff = th->rootMoves[0].score - bestThread->rootMoves[0].score;
 
           // Select the thread with the best score, always if it is a mate
           if (    scoreDiff > 0
