@@ -250,7 +250,8 @@ void MainThread::search() {
       for (Thread* th : Threads)
       {
           Depth depthDiff = th->completedDepth - bestThread->completedDepth;
-          Value scoreDiff = th->rootMoves[0].score - bestThread->rootMoves[0].score;
+          Value scoreDiff =  th->rootMoves[0].score - bestThread->rootMoves[0].score
+                           - std::max(Value(0), bestThread->rootMoves[0].score - previousScore);
 
           // Select the thread with the best score, always if it is a mate
           if (    scoreDiff > 0
