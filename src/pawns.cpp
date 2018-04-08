@@ -41,7 +41,7 @@ namespace {
   Score Connected[2][2][3][RANK_NB];
 
   // Doubled pawn penalty
-  constexpr Score Doubled[2] = {S(16, 36), S(24, 40)};
+  constexpr Score Doubled[2] = {S(15, 33), S(21, 42)};
 
   // Weakness of our pawn shelter in front of the king by [isKingFile][distance from edge][rank].
   // RANK_1 = 0 is used for files where we have no pawns or our pawn is behind our king.
